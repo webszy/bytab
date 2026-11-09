@@ -1,0 +1,17 @@
+{
+  "name": "bytab",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+  },
+  "scripts": {
+    "dev:ext": "pnpm --filter ./apps/extension dev",
+    "dev:web": "pnpm --filter ./apps/web dev",
+    "build:ext": "pnpm --filter ./apps/extension build",
+    "build:web": "pnpm --filter ./apps/web build",
+    "zip:ext": "pnpm --filter ./apps/extension zip",
+    "typecheck": "pnpm -r --if-present typecheck"
+  }
+}
