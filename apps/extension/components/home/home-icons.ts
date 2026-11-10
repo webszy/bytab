@@ -579,6 +579,48 @@ export const homeIcons = {
         }
       }
     ]
+  },
+  "calendar": {
+    "attributes": {
+      "fill": "none",
+      "stroke": "currentColor",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      "stroke-width": "1.8",
+      "viewBox": "0 0 24 24"
+    },
+    "shapes": [
+      { "tag": "rect", "attributes": { "x": "3.5", "y": "5", "width": "17", "height": "15.5", "rx": "2" } },
+      { "tag": "path", "attributes": { "d": "M3.5 10h17M8 3.5v3M16 3.5v3" } }
+    ]
+  },
+  "arrowUpRight": {
+    "attributes": {
+      "fill": "none",
+      "stroke": "currentColor",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      "stroke-width": "1.8",
+      "viewBox": "0 0 24 24"
+    },
+    "shapes": [
+      { "tag": "path", "attributes": { "d": "M7 17 17 7M9 7h8v8" } }
+    ]
+  },
+  "history": {
+    "attributes": {
+      "fill": "none",
+      "stroke": "currentColor",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      "stroke-width": "1.8",
+      "viewBox": "0 0 24 24"
+    },
+    "shapes": [
+      { "tag": "path", "attributes": { "d": "M4 12a8 8 0 1 0 2.3-5.6" } },
+      { "tag": "path", "attributes": { "d": "M4 4.5V9h4.5" } },
+      { "tag": "path", "attributes": { "d": "M12 8.5V12l2.5 1.5" } }
+    ]
   }
 } as const;
 

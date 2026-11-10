@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import type { PromptRequest } from '../../composables/usePromptNavigation';
 import HomeIcon from './HomeIcon.vue';
+
+const props = defineProps<{ enabled?: boolean; busy?: boolean; feedback?: string; manualCopy?: boolean }>();
+const emit = defineEmits<{ send: [request: PromptRequest] }>();
 
 const models = [
   { id: 'chatgpt', label: 'ChatGPT' },
@@ -15,6 +19,18 @@ const menuOpen = ref(false);
 const prompt = ref('');
 const selector = ref<HTMLElement | null>(null);
 const trigger = ref<HTMLButtonElement | null>(null);
+const promptInput = ref<HTMLInputElement | null>(null);
+
+function send() {
+  if (!props.enabled || props.busy || !prompt.value.trim()) return;
+  closeMenu();
+  emit('send', { service: models[selectedIndex.value]!.id, prompt: prompt.value });
+}
+
+function selectPrompt() {
+  promptInput.value?.focus();
+  promptInput.value?.select();
+}
 
 async function focusOption(index: number) {
   activeIndex.value = (index + models.length) % models.length;
@@ -58,20 +74,21 @@ onBeforeUnmount(() => { document.removeEventListener('pointerdown', onOutsidePoi
 </script>
 
 <template>
-  <form class="home-prompt" aria-label="AI prompt preview" @submit.prevent>
+  <form class="home-prompt" :class="{ 'home-prompt--feedback': enabled && feedback }" :aria-label="enabled ? 'AI prompt' : 'AI prompt preview'" @submit.prevent="send">
     <span class="prompt-symbol"><HomeIcon name="sparkle" /></span>
     <label class="sr-only" for="home-prompt-input">Ask anything</label>
     <input
       id="home-prompt-input"
+      ref="promptInput"
       v-model="prompt"
       class="prompt-input"
       type="text"
       placeholder="Ask anything..."
       autocomplete="off"
       spellcheck="false"
-      aria-describedby="prompt-preview-help"
+      :aria-describedby="enabled ? feedback ? 'prompt-feedback' : undefined : 'prompt-preview-help'"
     />
-    <span id="prompt-preview-help" class="sr-only">Model selection is available. Sending prompts is not available yet.</span>
+    <span v-if="!enabled" id="prompt-preview-help" class="sr-only">Model selection is available. Sending prompts is not available yet.</span>
 
     <div class="prompt-actions">
       <div ref="selector" class="model-selector" @keydown.esc.stop.prevent="closeMenu(true)">
@@ -121,9 +138,20 @@ onBeforeUnmount(() => { document.removeEventListener('pointerdown', onOutsidePoi
         </div>
       </div>
 
-      <button class="prompt-send" type="submit" title="Sending prompts is not available yet" aria-label="Send prompt (not available yet)" disabled>
+      <button
+        class="prompt-send"
+        type="submit"
+        :title="enabled ? 'Open selected service' : 'Sending prompts is not available yet'"
+        :aria-label="enabled ? 'Open selected service' : 'Send prompt (not available yet)'"
+        :disabled="!enabled || busy || !prompt.trim()"
+        :aria-busy="busy"
+      >
         <HomeIcon name="send" />
       </button>
+    </div>
+    <div v-if="enabled && feedback" id="prompt-feedback" class="prompt-feedback" role="status">
+      <span>{{ feedback }}</span>
+      <button v-if="manualCopy" class="text-action" type="button" @click="selectPrompt">Select prompt to copy</button>
     </div>
   </form>
 </template>

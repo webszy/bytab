@@ -1,0 +1,452 @@
+/* Homepage interactions, loaded only by the extension entry point. */
+.recent-card {
+  text-align: left;
+}
+.recent-card:enabled:hover {
+  background: rgb(255 255 255 / 68%);
+}
+.recent-card[aria-busy='true'] {
+  cursor: progress;
+}
+
+.home-page .home-datetime {
+  margin-bottom: 20px;
+}
+.home-page .home-datetime:has(+ .home-holiday) {
+  margin-bottom: 0;
+}
+.home-page .home-shortcuts {
+  max-width: min(100%, 680px);
+}
+.home-page .shortcut-items {
+  overflow-x: auto;
+  padding: 5px 1px;
+  margin: -5px -1px;
+  scrollbar-width: thin;
+}
+.shortcut-slot {
+  display: block;
+  width: 52px;
+  min-height: 74px;
+  flex: none;
+}
+.shortcut-slot--detached {
+  display: contents;
+}
+.shortcut-entry {
+  position: relative;
+  width: 52px;
+  flex: none;
+}
+.shortcut-item--managed {
+  touch-action: none;
+}
+.shortcut-item--managed .shortcut-label {
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.shortcut-monogram {
+  color: #1f2329;
+  font-size: 22px;
+  font-weight: 600;
+}
+.shortcut-edit {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: 50%;
+  background: white;
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0;
+}
+.shortcut-entry:hover .shortcut-edit,
+.shortcut-entry:focus-within .shortcut-edit {
+  opacity: 1;
+}
+.shortcut-layout {
+  position: absolute;
+  z-index: 25;
+  inset: 0;
+  pointer-events: none;
+}
+.shortcut-positioned {
+  position: absolute;
+  width: 64px;
+  height: 84px;
+  pointer-events: auto;
+}
+.shortcut-positioned .shortcut-item {
+  width: 100%;
+}
+.shortcut-positioned .shortcut-edit {
+  right: 0;
+}
+.shortcut-positioned.is-dragging {
+  z-index: 1;
+  cursor: grabbing;
+}
+.shortcut-positioned.is-dragging .shortcut-tile {
+  transform: scale(1.06);
+}
+.home-notice {
+  position: absolute;
+  z-index: 35;
+  top: 60px;
+  left: 50%;
+  width: max-content;
+  max-width: min(540px, calc(100% - 32px));
+  margin: 0;
+  padding: 8px 14px;
+  transform: translateX(-50%);
+  border-radius: 12px;
+  color: #1f2329;
+  background: rgb(255 255 255 / 94%);
+  font-size: 12px;
+  text-align: center;
+}
+
+.home-prompt--feedback {
+  margin-bottom: 54px;
+}
+.prompt-feedback {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 16px;
+  left: 16px;
+  color: #1f2329;
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: center;
+  text-shadow: 0 1px 5px white;
+  user-select: text;
+}
+.prompt-feedback .text-action {
+  margin-left: 6px;
+  font-size: inherit;
+}
+.home-page .prompt-send:disabled {
+  opacity: 0.55;
+}
+
+.text-action {
+  padding: 0;
+  border: 0;
+  color: #0071e3;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+}
+.text-action--danger {
+  color: #b42318;
+}
+.text-action:hover {
+  text-decoration: underline;
+}
+.dock-folder-label {
+  display: block;
+  max-width: 106px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dock-folder:hover {
+  background: rgb(0 0 0 / 4%);
+}
+.dock-folder[aria-expanded='true'] {
+  background: rgb(0 113 227 / 10%);
+}
+.dock-navigation {
+  flex: 1;
+}
+.bookmark-panel {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  display: flex;
+  width: min(680px, calc(100vw - 32px));
+  max-height: min(60svh, 600px);
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  transform: translateX(-50%);
+  border: 1px solid rgb(255 255 255 / 85%);
+  border-radius: 24px;
+  outline: none;
+  background: rgb(255 255 255 / 92%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  backdrop-filter: blur(24px) saturate(170%);
+  box-shadow: 0 12px 32px -6px rgb(0 0 0 / 16%);
+}
+.bookmark-panel-heading,
+.dialog-heading {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+}
+.bookmark-panel-heading h2,
+.dialog-heading h2 {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dialog-close {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #1f2329;
+  background: rgb(0 0 0 / 5%);
+  font-size: 22px;
+  line-height: 1;
+}
+.bookmark-search,
+.shortcut-form input {
+  width: 100%;
+  min-height: 38px;
+  flex: none;
+  padding: 8px 12px;
+  border: 1px solid rgb(0 0 0 / 12%);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 80%);
+  font: inherit;
+  font-size: 13px;
+  user-select: text;
+}
+.bookmark-entries {
+  display: grid;
+  min-height: 0;
+  gap: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.bookmark-entries--grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.bookmark-entries--list {
+  grid-template-columns: minmax(0, 1fr);
+}
+.bookmark-entry {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  text-align: left;
+}
+.bookmark-entry:enabled:hover {
+  background: rgb(0 113 227 / 8%);
+}
+.bookmark-entry:disabled {
+  opacity: 0.6;
+}
+.bookmark-entry-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+  border-radius: 10px;
+  color: #0071e3;
+  background: rgb(0 113 227 / 8%);
+}
+.bookmark-entry-icon .home-icon {
+  width: 17px;
+  height: 17px;
+}
+.bookmark-entry-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.bookmark-entry-copy > span,
+.bookmark-entry-copy > small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bookmark-entry-copy > span {
+  font-size: 13px;
+  font-weight: 500;
+}
+.bookmark-entry-copy > small {
+  color: rgb(31 35 41 / 55%);
+  font-size: 11px;
+}
+.bookmark-folder-chevron {
+  width: 12px;
+  height: 12px;
+  transform: rotate(-90deg);
+}
+.bookmark-message {
+  margin: 8px 0;
+  color: rgb(31 35 41 / 70%);
+  font-size: 13px;
+}
+.bookmark-load-more {
+  flex: none;
+  padding: 8px;
+}
+
+.home-dialog {
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100svh - 48px);
+  padding: 22px;
+  overflow-y: auto;
+  border: 1px solid rgb(255 255 255 / 90%);
+  border-radius: 24px;
+  color: #1f2329;
+  background: rgb(255 255 255 / 94%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  backdrop-filter: blur(24px) saturate(170%);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 18%);
+}
+.home-dialog::backdrop {
+  background: rgb(31 35 41 / 18%);
+}
+.home-dialog button:focus-visible,
+.home-dialog input:focus-visible {
+  outline: 2px solid #0071e3;
+  outline-offset: 3px;
+}
+.home-dialog button:disabled {
+  opacity: 0.55;
+}
+.dialog-heading {
+  margin-bottom: 18px;
+}
+.background-preview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 14px;
+  background: #cbcbcb;
+  object-fit: cover;
+}
+.background-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.dialog-button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 80%);
+  font-size: 12px;
+  font-weight: 500;
+}
+.dialog-button--primary {
+  border-color: transparent;
+  color: white;
+  background: #0071e3;
+}
+.background-upload {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.background-upload:focus-within {
+  outline: 2px solid #0071e3;
+  outline-offset: 3px;
+}
+.background-upload input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.dialog-help {
+  margin: 12px 0;
+  color: rgb(31 35 41 / 65%);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.dialog-feedback {
+  min-height: 18px;
+  margin: 12px 0;
+  color: #b42318;
+  font-size: 12px;
+  user-select: text;
+}
+.dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+.dialog-actions > .text-action:first-child {
+  margin-right: auto;
+}
+.shortcut-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.shortcut-form > label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.shortcut-form .dialog-feedback {
+  margin: 0;
+}
+.shortcut-form .dialog-actions {
+  margin-top: 0;
+}
+.shortcut-edit-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+@media (hover: none) {
+  .shortcut-edit {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 620px) {
+  .bookmark-entries--grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .home-page .shortcut-items {
+    max-width: calc(100vw - 68px);
+  }
+  .home-prompt--feedback {
+    margin-bottom: 64px;
+  }
+}

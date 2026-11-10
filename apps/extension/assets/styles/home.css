@@ -94,40 +94,42 @@
   box-shadow: 0 2px 8px rgb(0 0 0 / 4%);
 }
 
-.home-bookmark-status {
+.home-brand-lockup {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 8px;
-  color: rgb(29 29 31 / 90%);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  white-space: nowrap;
+  gap: 10px;
+  color: #1f2329;
 }
 
-.home-bookmark-status > span {
-  overflow: hidden;
-  text-overflow: ellipsis;
+.home-brand-heading {
+  margin: 0;
+  line-height: 0;
 }
 
-.home-bookmark-status .home-icon {
-  width: 14px;
+.home-brand-logo {
+  display: block;
+  width: auto;
+  height: 36px;
+}
+
+.home-brand-divider {
+  width: 1px;
   height: 14px;
-  color: #0071e3;
-}
-
-.home-utilities {
-  display: flex;
   flex: none;
-  align-items: center;
-  gap: 12px;
+  background: rgb(31 35 41 / 22%);
 }
 
-.home-clock {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
+.home-bookmark-count {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: rgb(31 35 41 / 58%);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 8px rgb(255 255 255 / 70%);
   white-space: nowrap;
 }
 
@@ -144,19 +146,6 @@
   box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
   font-size: 12px;
   font-weight: 500;
-}
-
-.wallpaper-preview {
-  display: block;
-  width: 20px;
-  height: 20px;
-  flex: none;
-  border-radius: 6px;
-  background: linear-gradient(to bottom, #dedede, #d0d0d0, #e3e3e3);
-  background-image: var(--home-wallpaper), linear-gradient(to bottom, #dedede, #d0d0d0, #e3e3e3);
-  background-position: center;
-  background-size: cover;
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 10%);
 }
 
 .home-appearance .home-icon {
@@ -178,37 +167,144 @@
   padding: 0 24px;
 }
 
-.home-brand {
+.home-datetime {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  text-align: center;
+}
+
+.home-time {
+  color: #1f2329;
+  font-size: 60px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 70%), 0 10px 28px rgb(255 255 255 / 55%);
+}
+
+.home-date {
+  margin: 10px 0 0;
+  color: rgb(31 35 41 / 82%);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 10px rgb(255 255 255 / 72%);
+}
+
+.home-holiday {
   display: flex;
   flex: none;
   align-items: center;
-  gap: 12px;
-  margin: 0 0 24px;
+  justify-content: center;
+  gap: 6px;
+  margin: 8px 0 20px;
+  color: rgb(31 35 41 / 55%);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 8px rgb(255 255 255 / 75%);
 }
 
-.home-brand-mark {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border-radius: 16px;
-  color: white;
-  background: #1d1d1f;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 40%), 0 10px 15px -3px rgb(0 0 0 / 15%), 0 4px 6px -4px rgb(0 0 0 / 15%);
+.home-holiday .home-icon {
+  width: 14px;
+  height: 14px;
 }
 
-.home-brand-mark .home-icon {
-  width: 20px;
-  height: 20px;
+.home-recent {
+  display: flex;
+  width: 100%;
+  max-width: 640px;
+  flex: none;
+  align-items: stretch;
+  gap: 14px;
+  margin: 0 0 18px;
 }
 
-.home-brand-wordmark {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 34px;
+.recent-card {
+  display: flex;
+  min-width: 0;
+  height: 84px;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid rgb(255 255 255 / 78%);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 52%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: 0 8px 20px -10px rgb(0 0 0 / 16%);
+}
+
+.recent-card-kicker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: rgb(31 35 41 / 55%);
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.5;
-  letter-spacing: -0.025em;
-  filter: drop-shadow(0 2px 12px rgb(255 255 255 / 70%));
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.recent-card-kicker .home-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.recent-card-content {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.recent-card-mark {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 6%);
+}
+
+.recent-card-mark .home-icon { width: 16px; height: 16px; }
+.recent-card-mark--github { color: #181717; }
+
+.recent-card-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.recent-card-primary,
+.recent-card-secondary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-card-primary {
+  color: #1f2329;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.recent-card-secondary {
+  color: rgb(31 35 41 / 55%);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
 }
 
 .home-prompt {
@@ -591,7 +687,9 @@ a.shortcut-item--chatgpt:hover .shortcut-tile { transform: scale(1.05); box-shad
 
 @media (max-width: 620px) {
   .home-topbar { padding: 16px 16px 0; }
-  .home-appearance > span:not(.wallpaper-preview) { display: none; }
+  .home-appearance > span { display: none; }
+  .home-recent { flex-direction: column; }
+  .home-time { font-size: 48px; }
   .home-main { padding: 0 16px; }
   .home-shortcuts { max-width: 100%; padding: 16px; }
   .shortcut-items { gap: clamp(8px, 3vw, 20px); overflow-x: auto; padding: 2px; scrollbar-width: thin; }
@@ -608,19 +706,28 @@ a.shortcut-item--chatgpt:hover .shortcut-tile { transform: scale(1.05); box-shad
   .model-trigger { gap: 4px; padding-right: 8px; padding-left: 8px; }
 }
 
+@media (max-height: 760px) {
+  .home-date { margin-top: 6px; }
+  .home-holiday { margin-bottom: 14px; }
+  .home-recent { margin-bottom: 12px; }
+  .home-prompt { margin-bottom: 16px; }
+}
+
 @media (max-height: 520px) {
   .home-main { margin-top: 0; }
-  .home-brand { margin-bottom: 12px; }
-  .home-brand-mark { width: 36px; height: 36px; border-radius: 14px; }
-  .home-brand-wordmark { font-size: 28px; line-height: 1.25; }
-  .home-prompt { margin-bottom: 16px; }
+  .home-time { font-size: 44px; }
+  .home-recent-card,
+  .recent-card { height: 72px; }
+  .home-prompt { margin-bottom: 12px; }
   .home-shortcuts { padding-top: 12px; padding-bottom: 12px; }
   .shortcuts-header { margin-bottom: 10px; }
   .model-menu { top: auto; bottom: calc(100% + 12px); }
 }
 
 @media (max-height: 380px) {
-  .home-brand { display: none; }
+  .home-holiday,
+  .home-recent { display: none; }
+  .home-time { font-size: 36px; }
   .home-prompt { margin-bottom: 12px; }
 }
 

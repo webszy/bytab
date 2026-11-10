@@ -1,45 +1,34 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import brandLogo from '../../../shared/ByTab_Brand_Kit_v1.0/02_Logo_Lockups/horizontal-charcoal-minimal.svg?url';
 import HomeIcon from './HomeIcon.vue';
 
 defineProps<{ bookmarkCount: number | null; bookmarksUnavailable: boolean }>();
-
-const time = ref('');
-let clockInterval: ReturnType<typeof setInterval> | undefined;
-
-function updateClock() {
-  time.value = new Intl.DateTimeFormat('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).format(new Date());
-}
-
-updateClock();
-onMounted(() => { clockInterval = setInterval(updateClock, 30_000); });
-onBeforeUnmount(() => { clearInterval(clockInterval); });
+defineEmits<{ settings: [] }>();
 </script>
 
 <template>
   <header class="home-topbar">
-    <div class="home-bookmark-status glass-pill" role="status">
-      <HomeIcon name="bookmark" />
-      <span v-if="bookmarksUnavailable">Bookmarks unavailable</span>
-      <span v-else>{{ bookmarkCount === null ? '—' : bookmarkCount.toLocaleString('en-US') }} {{ bookmarkCount === 1 ? 'Bookmark' : 'Bookmarks' }}</span>
+    <div class="home-brand-lockup">
+      <h1 class="home-brand-heading">
+        <img class="home-brand-logo" :src="brandLogo" alt="bytab" />
+      </h1>
+      <span class="home-brand-divider" aria-hidden="true" />
+      <p class="home-bookmark-count">
+        <template v-if="bookmarksUnavailable">Bookmarks unavailable</template>
+        <template v-else-if="bookmarkCount === null">—</template>
+        <template v-else>{{ bookmarkCount.toLocaleString() }} {{ bookmarkCount === 1 ? 'Bookmark' : 'Bookmarks' }}</template>
+      </p>
     </div>
 
-    <div class="home-utilities">
-      <time class="home-clock glass-pill" aria-label="Current local time">{{ time }}</time>
-      <button
-        class="home-appearance"
-        type="button"
-        disabled
-        title="Appearance settings are not available yet"
-      >
-        <span class="wallpaper-preview" role="img" aria-label="Current wallpaper" />
-        <span>Appearance</span>
-        <HomeIcon name="settings" />
-      </button>
-    </div>
+    <button
+      class="home-appearance"
+      type="button"
+      aria-label="Settings"
+      title="Background settings"
+      @click="$emit('settings')"
+    >
+      <HomeIcon name="settings" />
+      <span>Settings</span>
+    </button>
   </header>
 </template>

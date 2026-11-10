@@ -13,13 +13,28 @@ final inline Dock styles take precedence over the broader design-system notes.
 - No Tailwind CDN, remote scripts, remote stylesheets, remote fonts, or icon
   libraries are required at runtime.
 
+## App icon
+
+`public/icon.svg` is an unchanged copy of
+`apps/shared/ByTab_Brand_Kit_v1.0/01_Master_SVG/bytab-app-icon-full.svg`.
+The new tab page links it as its favicon. Chrome's extension manifest does not
+accept SVG, so `public/icon-16.png`, `icon-32.png`, `icon-48.png`, and
+`icon-128.png` are unchanged copies of the same artwork from
+`03_Chrome_Extension/`. WXT discovers those PNG names and writes them into
+`manifest.icons`.
+
+The header uses
+`apps/shared/ByTab_Brand_Kit_v1.0/02_Logo_Lockups/horizontal-charcoal-minimal.svg`
+through the bundler. That file is the vector of the horizontal minimal lockup.
+The separate “bytab” text node is not rendered beside it.
+
 ## Wallpaper
 
 On 2026-11-09, the wallpaper URL in the Stitch HTML redirected to a Google
 Accounts sign-in HTML document instead of returning an image. The user then
 provided `apps/shared/wallpapers/default.png` (1679 × 937). It is copied unchanged
 to `assets/wallpapers/default.png` so this application can build and run independently.
-Both the full-page background and Appearance thumbnail use that local copy.
+The full-page background uses that local copy.
 Vite packages it into the extension; no remote image request is made. The image
 uses centered cover sizing, with the source's white tint and vertical lighting
 gradient. A neutral color remains underneath while it decodes.
