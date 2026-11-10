@@ -1,0 +1,26 @@
+{
+  "color/charcoal": {
+    "$type": "color",
+    "$value": "#1F2329"
+  },
+  "color/sky": {
+    "$type": "color",
+    "$value": "#E3EEFF"
+  },
+  "color/lavender": {
+    "$type": "color",
+    "$value": "#E8E0FF"
+  },
+  "color/sunrise": {
+    "$type": "color",
+    "$value": "#FFD9C3"
+  },
+  "color/offwhite": {
+    "$type": "color",
+    "$value": "#F9FAFC"
+  },
+  "color/mountain": {
+    "$type": "color",
+    "$value": "#6D87B5"
+  }
+}

@@ -1,0 +1,1 @@
+Place icon-16.png, icon-32.png, icon-48.png and icon-128.png under extension/icons/; adjust paths in your actual manifest.json. The manifest-icons-example.json is only a sample. For very small toolbar icons, test the minimal set.

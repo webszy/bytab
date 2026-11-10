@@ -1,0 +1,45 @@
+{
+  "brand": "bytab",
+  "version": "1.0",
+  "colors": {
+    "charcoal": "#1F2329",
+    "sky": "#E3EEFF",
+    "lavender": "#E8E0FF",
+    "sunrise": "#FFD9C3",
+    "offwhite": "#F9FAFC",
+    "mountain": "#6D87B5",
+    "blue": "#087FDC",
+    "white": "#FFFFFF",
+    "muted": "#667085"
+  },
+  "gradients": {
+    "sunrise": [
+      {
+        "offset": 0,
+        "hex": "#B9C4F4"
+      },
+      {
+        "offset": 0.56,
+        "hex": "#E8B7D0"
+      },
+      {
+        "offset": 1,
+        "hex": "#FFCFAB"
+      }
+    ]
+  },
+  "typography": {
+    "wordmark": "Comfortaa Bold (converted to outlined SVG paths; not embedded as font)",
+    "ui": "Inter, system-ui, sans-serif"
+  },
+  "radius": {
+    "card": 22,
+    "pill": 999
+  },
+  "recommended": {
+    "primary_logo": "02_Logo_Lockups/horizontal-charcoal.svg",
+    "primary_app_icon": "01_Master_SVG/bytab-app-icon-full.svg",
+    "minimum_mark_render_px": 24,
+    "small_extension_icon": "03_Chrome_Extension/icon-minimal-16.png"
+  }
+}
