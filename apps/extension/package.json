@@ -10,6 +10,8 @@
     "zip": "wxt zip -b chrome",
     "compile": "vue-tsc --noEmit",
     "typecheck": "pnpm compile",
+    "test": "node --test tests/bookmark-tree.test.mjs",
+    "test:browser": "node tests/bookmarks.browser.mjs",
     "postinstall": "wxt prepare"
   },
   "dependencies": {

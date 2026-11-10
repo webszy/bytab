@@ -1,117 +1,98 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import type { BookmarkNode } from '../../composables/useBookmarks';
-import { websiteLabel, websiteUrl } from '../../utils/urls';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import type { BookmarkCatalog } from '../../utils/bookmarkTree';
+import { folderLabel } from '../../utils/bookmarkTree';
+import BookmarkPanel from './BookmarkPanel.vue';
 import HomeIcon from './HomeIcon.vue';
 
 const props = defineProps<{
   bookmarkCount: number | null;
-  roots: BookmarkNode[];
-  folders: BookmarkNode[];
-  nodes: Map<string, BookmarkNode>;
+  catalog: BookmarkCatalog;
   loading: boolean;
   error: string;
 }>();
 const emit = defineEmits<{ open: [title: string, url: string]; retry: [] }>();
 const dock = ref<HTMLElement | null>(null);
-const panel = ref<HTMLElement | null>(null);
-const filterInput = ref<HTMLInputElement | null>(null);
+const navigation = ref<HTMLElement | null>(null);
+const panel = ref<InstanceType<typeof BookmarkPanel> | null>(null);
 const panelOpen = ref(false);
 const selectedId = ref<string | null>(null);
 const showMore = ref(false);
-const query = ref('');
 const view = ref<'grid' | 'list'>('grid');
-const limit = ref(100);
+const capacity = ref(0);
 const folderColors = ['development', 'design', 'ai', 'work', 'reading'];
 let previousFocus: HTMLElement | null = null;
+let resizeObserver: ResizeObserver | undefined;
 
-const selected = computed(() => selectedId.value ? props.nodes.get(selectedId.value) : undefined);
-const title = computed(() => {
-  if (showMore.value) return 'Bookmark folders';
-  return selected.value ? selected.value.title || 'Untitled folder' : 'All Bookmarks';
-});
-const allBookmarks = computed(() => [...props.nodes.values()].filter(node => !!node.url));
-const entries = computed(() => {
-  if (showMore.value) return props.folders;
-  if (selected.value) return selected.value.children ?? [];
-  return [...props.roots.filter(node => !node.url), ...allBookmarks.value];
-});
-const filtered = computed(() => {
-  const text = query.value.trim().toLocaleLowerCase();
-  if (!text) return entries.value;
-  const candidates: BookmarkNode[] = [];
-  const remaining = [...entries.value];
-  const seen = new Set<string>();
-  while (remaining.length) {
-    const node = remaining.pop()!;
-    if (seen.has(node.id)) continue;
-    seen.add(node.id);
-    candidates.push(node);
-    if (node.children) {
-      for (const child of node.children) remaining.push(child);
-    }
-  }
-  return candidates.filter(node => `${node.title} ${node.url ?? ''}`.toLocaleLowerCase().includes(text));
-});
+const visibleCount = computed(() => props.catalog.folders.length > capacity.value
+  ? Math.max(0, capacity.value - 1) : capacity.value);
+const visibleFolders = computed(() => props.catalog.folders.slice(0, visibleCount.value));
+const overflowFolders = computed(() => props.catalog.folders.slice(visibleCount.value));
+const panelKey = computed(() => showMore.value ? 'more' : `folder:${selectedId.value}`);
 
-watch([selectedId, showMore, query], () => { limit.value = 100; });
-watch(() => props.nodes, nodes => {
-  if (selectedId.value && !nodes.has(selectedId.value)) selectedId.value = null;
-});
+function measureCategories() {
+  const element = navigation.value;
+  if (!element) return;
+  const style = getComputedStyle(element);
+  const gap = parseFloat(style.columnGap) || 0;
+  const width = parseFloat(style.getPropertyValue('--dock-folder-size')) || 96;
+  capacity.value = Math.max(0, Math.floor((element.clientWidth + gap) / (width + gap)));
+}
 
-async function openFolder(id: string | null, more = false) {
-  if (!panelOpen.value) {
-    previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+async function openCategory(id: string | null, more = false, search = false) {
+  if (document.activeElement instanceof HTMLElement && dock.value?.contains(document.activeElement)) {
+    previousFocus = document.activeElement;
   }
   selectedId.value = id;
   showMore.value = more;
-  query.value = '';
   panelOpen.value = true;
   await nextTick();
-  panel.value?.focus();
+  if (search) panel.value?.focusSearch();
+  else panel.value?.focus();
 }
 
-function close() {
+function toggleCategory(id: string | null, more = false) {
+  if (panelOpen.value && selectedId.value === id && showMore.value === more) close();
+  else void openCategory(id, more);
+}
+
+function close(restoreFocus = true) {
   panelOpen.value = false;
-  previousFocus?.focus();
-}
-
-function back() {
-  if (showMore.value) {
-    showMore.value = false;
-    query.value = '';
-    return;
-  }
-  const parent = selected.value?.parentId ? props.nodes.get(selected.value.parentId) : undefined;
-  void openFolder(parent?.parentId === undefined ? null : parent.id);
-}
-
-function openEntry(node: BookmarkNode) {
-  if (!node.url) void openFolder(node.id);
-  else emit('open', node.title, node.url);
+  if (restoreFocus && previousFocus?.isConnected) previousFocus.focus();
 }
 
 async function filter() {
-  if (!panelOpen.value) await openFolder(null);
-  await nextTick();
-  filterInput.value?.focus();
+  if (!panelOpen.value) await openCategory(null, false, true);
+  else panel.value?.focusSearch();
+}
+
+async function changeView(value: 'grid' | 'list') {
+  view.value = value;
+  if (!panelOpen.value) await openCategory(null);
 }
 
 function onOutside(event: PointerEvent) {
-  if (panelOpen.value && event.target instanceof Node && !dock.value?.contains(event.target)) {
-    panelOpen.value = false;
-  }
+  if (panelOpen.value && event.target instanceof Node && !dock.value?.contains(event.target)) close(false);
 }
 
 function onEscape(event: KeyboardEvent) {
-  if (event.key === 'Escape' && panelOpen.value) close();
+  // The panel handles search first. Do not consume another input's shortcuts.
+  if (event.key === 'Escape' && !event.defaultPrevented && !event.isComposing && panelOpen.value
+    && (event.target === document.body || (event.target instanceof Node && dock.value?.contains(event.target)))) {
+    event.preventDefault();
+    close();
+  }
 }
 
 onMounted(() => {
+  measureCategories();
+  resizeObserver = new ResizeObserver(measureCategories);
+  if (navigation.value) resizeObserver.observe(navigation.value);
   document.addEventListener('pointerdown', onOutside);
   document.addEventListener('keydown', onEscape);
 });
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
   document.removeEventListener('pointerdown', onOutside);
   document.removeEventListener('keydown', onEscape);
 });
@@ -119,40 +100,26 @@ onBeforeUnmount(() => {
 
 <template>
   <footer ref="dock" class="bookmark-dock" aria-label="Bookmark dock">
-    <section v-if="panelOpen" ref="panel" class="bookmark-panel" tabindex="-1" :aria-label="title">
-      <header class="bookmark-panel-heading">
-        <button v-if="selectedId || showMore" class="text-action" type="button" aria-label="Back to parent folder" @click="back">← Back</button>
-        <h2>{{ title }}</h2>
-        <button class="dialog-close" type="button" aria-label="Close bookmarks" @click="close">×</button>
-      </header>
-      <input ref="filterInput" v-model="query" class="bookmark-search" type="search" placeholder="Filter bookmarks and folders" aria-label="Filter bookmarks and folders" />
-      <p v-if="error" class="bookmark-message" role="status">{{ error }} <button class="text-action" type="button" @click="emit('retry')">Try again</button></p>
-      <p v-if="loading" class="bookmark-message" role="status">Loading bookmarks…</p>
-      <p v-else-if="filtered.length === 0" class="bookmark-message">{{ query ? 'No matching bookmarks or folders' : selectedId ? 'This folder is empty' : 'No bookmarks yet' }}</p>
-      <div v-else class="bookmark-entries" :class="`bookmark-entries--${view}`">
-        <button
-          v-for="node in filtered.slice(0, limit)"
-          :key="node.id"
-          class="bookmark-entry"
-          type="button"
-          :disabled="!!node.url && !websiteUrl(node.url)"
-          :title="node.url || node.title"
-          @click="openEntry(node)"
-        >
-          <span class="bookmark-entry-icon"><HomeIcon :name="node.url ? 'arrowUpRight' : 'bookmark'" /></span>
-          <span class="bookmark-entry-copy">
-            <span>{{ node.title || (node.url ? websiteLabel(node.url) || node.url : 'Untitled folder') }}</span>
-            <small>{{ node.url ? websiteLabel(node.url) || 'Unsupported address' : `${node.children?.length ?? 0} items` }}</small>
-          </span>
-          <HomeIcon v-if="!node.url" name="chevron" class="bookmark-folder-chevron" />
-        </button>
-      </div>
-      <button v-if="filtered.length > limit" class="text-action bookmark-load-more" type="button" @click="limit += 100">Show more · {{ (filtered.length - limit).toLocaleString() }} remaining</button>
-    </section>
+    <BookmarkPanel
+      v-if="panelOpen"
+      id="bookmark-panel"
+      ref="panel"
+      :key="panelKey"
+      :catalog="catalog"
+      :folder-id="selectedId"
+      :more="showMore"
+      :overflow-folders="overflowFolders"
+      :view="view"
+      :loading="loading"
+      :error="error"
+      @open="(title, url) => emit('open', title, url)"
+      @close="close"
+      @retry="emit('retry')"
+    />
     <div class="dock-surface" aria-hidden="true" />
     <div class="dock-content">
       <div class="dock-root-group">
-        <button class="dock-root dock-item" type="button" :aria-expanded="panelOpen && selectedId === null && !showMore" @click="openFolder(null)">
+        <button class="dock-root dock-item" type="button" aria-label="All Bookmarks" aria-controls="bookmark-panel" :aria-expanded="panelOpen && selectedId === null && !showMore" @click="toggleCategory(null)">
           <span class="dock-root-icon"><HomeIcon name="bookmark" /></span>
           <span class="dock-root-copy">
             <span class="dock-root-title">All Bookmarks <span class="dock-count">{{ bookmarkCount === null ? '—' : bookmarkCount.toLocaleString() }}</span></span>
@@ -162,31 +129,32 @@ onBeforeUnmount(() => {
         <span class="dock-divider" aria-hidden="true" />
       </div>
 
-      <nav class="dock-navigation" aria-label="Bookmark folders" tabindex="0">
+      <nav ref="navigation" class="dock-navigation" aria-label="Bookmark folders">
         <button
-          v-for="(folder, index) in folders.slice(0, 5)"
+          v-for="(folder, index) in visibleFolders"
           :key="folder.id"
           class="dock-folder dock-item"
-          :class="`dock-folder--${folderColors[index]}`"
+          :class="`dock-folder--${folderColors[index % folderColors.length]}`"
           type="button"
-          :title="folder.title || 'Untitled folder'"
-          :aria-expanded="panelOpen && selectedId === folder.id"
-          @click="openFolder(folder.id)"
+          :title="folderLabel(folder)"
+          aria-controls="bookmark-panel"
+          :aria-expanded="panelOpen && selectedId === folder.id && !showMore"
+          @click="toggleCategory(folder.id)"
         >
-          <span class="dock-folder-icon"><HomeIcon name="bookmark" /></span>
-          <span class="dock-folder-label">{{ folder.title || 'Untitled folder' }}</span>
+          <span class="dock-folder-icon"><HomeIcon name="folder" /></span>
+          <span class="dock-folder-label">{{ folderLabel(folder) }}</span>
         </button>
-        <button v-if="folders.length > 5" class="dock-folder dock-item dock-folder--more" type="button" :aria-expanded="panelOpen && showMore" @click="openFolder(null, true)">
+        <button v-if="overflowFolders.length" class="dock-folder dock-item dock-folder--more" type="button" aria-controls="bookmark-panel" :aria-expanded="panelOpen && showMore" @click="toggleCategory(null, true)">
           <span class="dock-folder-icon"><HomeIcon name="more" /></span>
-          <span>More ({{ folders.length - 5 }})</span>
+          <span class="dock-folder-label">More ({{ overflowFolders.length }})</span>
         </button>
       </nav>
 
       <div class="dock-tools">
-        <button class="dock-filter" type="button" @click="filter"><HomeIcon name="search" /><span>Filter</span></button>
+        <button class="dock-filter" type="button" aria-label="Search bookmarks" aria-controls="bookmark-panel" @click="filter"><HomeIcon name="search" /><span>Filter</span></button>
         <div class="dock-view-switch" role="group" aria-label="Bookmark view">
-          <button :class="{ 'is-selected': view === 'grid' }" type="button" :aria-pressed="view === 'grid'" title="Grid view" @click="view = 'grid'"><HomeIcon name="grid" /><span class="sr-only">Grid view</span></button>
-          <button :class="{ 'is-selected': view === 'list' }" type="button" :aria-pressed="view === 'list'" title="List view" @click="view = 'list'"><HomeIcon name="list" /><span class="sr-only">List view</span></button>
+          <button :class="{ 'is-selected': view === 'grid' }" type="button" :aria-pressed="view === 'grid'" title="Grid view" @click="changeView('grid')"><HomeIcon name="grid" /><span class="sr-only">Grid view</span></button>
+          <button :class="{ 'is-selected': view === 'list' }" type="button" :aria-pressed="view === 'list'" title="List view" @click="changeView('list')"><HomeIcon name="list" /><span class="sr-only">List view</span></button>
         </div>
       </div>
     </div>

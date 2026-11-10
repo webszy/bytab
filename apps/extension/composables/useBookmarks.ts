@@ -1,7 +1,6 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
-import { browser, type Browser } from 'wxt/browser';
-
-export type BookmarkNode = Browser.bookmarks.BookmarkTreeNode;
+import { browser } from 'wxt/browser';
+import { createBookmarkCatalog, type BookmarkNode } from '../utils/bookmarkTree';
 
 export function useBookmarks() {
   const tree = shallowRef<BookmarkNode[]>([]);
@@ -11,28 +10,15 @@ export function useBookmarks() {
   let revision = 0;
   let disposed = false;
 
-  const nodes = computed(() => {
-    const byId = new Map<string, BookmarkNode>();
-    const remaining = [...tree.value];
-    while (remaining.length) {
-      const node = remaining.pop()!;
-      byId.set(node.id, node);
-      if (node.children) {
-        for (let index = node.children.length - 1; index >= 0; index--) remaining.push(node.children[index]!);
-      }
-    }
-    return byId;
-  });
+  const catalog = computed(() => createBookmarkCatalog(tree.value));
   const bookmarkCount = computed(() =>
-    loading.value || error.value ? null : [...nodes.value.values()].filter(node => !!node.url).length);
-  // The synthetic tree root is structural. All real root folders remain accessible.
-  const roots = computed(() => tree.value.flatMap(node =>
-    !node.url && node.parentId === undefined ? node.children ?? [] : [node]));
-  const folders = computed(() => [...nodes.value.values()]
-    .filter(node => !node.url && node.parentId !== undefined));
+    loading.value || error.value ? null : catalog.value.searchIndex.length);
 
   async function refresh() {
+    clearTimeout(timer);
     const request = ++revision;
+    // Keep the current browser usable during background synchronization.
+    if (error.value || !tree.value.length) loading.value = true;
     try {
       const result = await browser.bookmarks.getTree();
       if (disposed || request !== revision) return;
@@ -73,5 +59,5 @@ export function useBookmarks() {
     browser.bookmarks.onImportEnded.removeListener(scheduleRefresh);
   });
 
-  return { tree, nodes, roots, folders, bookmarkCount, loading, error, refresh };
+  return { tree, catalog, bookmarkCount, loading, error, refresh };
 }

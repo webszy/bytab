@@ -1,5 +1,20 @@
 // Inline vector artwork extracted from the supplied Stitch HTML.
 export const homeIcons = {
+  "folder": {
+    "attributes": { "fill": "currentColor", "viewBox": "0 0 24 24" },
+    "shapes": [{
+      "tag": "path",
+      "attributes": { "d": "M3 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-9l-2-2H3zm0 4h18v10H3V8z" }
+    }]
+  },
+  "globe": {
+    "attributes": { "fill": "none", "stroke": "currentColor", "stroke-width": "1.6", "viewBox": "0 0 24 24" },
+    "shapes": [
+      { "tag": "circle", "attributes": { "cx": "12", "cy": "12", "r": "9" } },
+      { "tag": "ellipse", "attributes": { "cx": "12", "cy": "12", "rx": "4", "ry": "9" } },
+      { "tag": "path", "attributes": { "d": "M3 12h18" } }
+    ]
+  },
   "bookmark": {
     "attributes": {
       "fill": "currentColor",

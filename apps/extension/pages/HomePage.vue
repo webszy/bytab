@@ -23,7 +23,7 @@ import '@/assets/styles/home.css';
 import '@/assets/styles/interactions.css';
 
 const bookmarks = useBookmarks();
-const { roots, folders, nodes, bookmarkCount, loading: bookmarksLoading, error: bookmarksError } = bookmarks;
+const { catalog, bookmarkCount, loading: bookmarksLoading, error: bookmarksError } = bookmarks;
 const { now, time, date, locale } = useClock();
 const holiday = computed(() => holidayLabel(now.value, locale));
 const { value: lastOpened, loading: openedLoading, error: openedError } = useLastOpened();
@@ -128,9 +128,7 @@ async function alignShortcut() {
     <div class="home-bottom-buffer" aria-hidden="true" />
     <BookmarkDock
       :bookmark-count="bookmarkCount"
-      :roots="roots"
-      :folders="folders"
-      :nodes="nodes"
+      :catalog="catalog"
       :loading="bookmarksLoading"
       :error="bookmarksError"
       @open="openSite"
