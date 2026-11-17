@@ -17,11 +17,6 @@
   padding-top: max(20px, env(safe-area-inset-top, 0px));
 }
 
-.website-home .home-clock {
-  min-width: 78px;
-  text-align: center;
-}
-
 .website-home .home-appearance {
   transition: background 200ms, box-shadow 200ms, transform 200ms;
 }
@@ -40,12 +35,10 @@
 }
 
 .website-home .home-main {
-  justify-content: flex-start;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  margin-top: -16px;
-  padding: 24px;
-  scrollbar-width: thin;
+  justify-content: center;
+  overflow: hidden;
+  margin-top: -32px;
+  padding: 0 24px;
 }
 
 .homepage-hero {
@@ -54,45 +47,9 @@
   flex: none;
   flex-direction: column;
   align-items: center;
-  margin-block: auto;
-  text-align: center;
-}
-
-.homepage-hero .home-brand {
-  margin-bottom: 18px;
-}
-
-.hero-slogan {
-  margin: 0;
-  font-size: clamp(30px, 3.6vw, 44px);
-  font-weight: 600;
-  line-height: 1.16;
-  letter-spacing: -0.035em;
-  filter: drop-shadow(0 2px 12px rgb(255 255 255 / 55%));
-}
-
-.hero-slogan > span {
-  display: block;
-}
-
-.hero-subtitle {
-  margin: 16px 0 0;
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-}
-
-.hero-description {
-  max-width: 450px;
-  margin: 8px 0 0;
-  color: rgb(29 29 31 / 75%);
-  font-size: 14px;
-  line-height: 1.6;
-  text-wrap: pretty;
 }
 
 .homepage-hero .home-prompt {
-  margin: 24px 0 20px;
   text-align: left;
   transition: box-shadow 200ms, border-color 200ms;
 }
@@ -101,41 +58,6 @@
   border-color: rgb(0 113 227 / 45%);
   box-shadow: 0 0 0 3px rgb(0 113 227 / 12%), 0 12px 32px -6px rgb(0 0 0 / 12%);
 }
-
-.chrome-cta {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 18px;
-  border: 1px solid rgb(0 89 181 / 20%);
-  border-radius: 9999px;
-  color: white;
-  background: #0071e3;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 20%), 0 2px 8px rgb(0 89 181 / 15%);
-  font-size: 13px;
-  font-weight: 600;
-  transition: background 200ms, transform 200ms;
-}
-
-.chrome-cta > .home-icon { width: 14px; height: 14px; }
-a.chrome-cta:hover { background: #0059b5; transform: translateY(-1px); }
-a.chrome-cta:active { transform: translateY(0); }
-
-.privacy-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 14px;
-  padding: 5px 11px;
-  font-size: 11px;
-  font-weight: 500;
-  transition: background 200ms;
-}
-
-.privacy-badge:hover { background: rgb(255 255 255 / 80%); }
-.privacy-badge > .home-icon { width: 13px; height: 13px; color: #248444; }
 
 .website-home .home-bottom-buffer,
 .website-home .bookmark-dock {
@@ -306,10 +228,7 @@ a.chrome-cta:active { transform: translateY(0); }
 
 @media (max-width: 620px) {
   .website-home .home-topbar { padding: max(16px, env(safe-area-inset-top, 0px)) 16px 0; }
-  .website-home .home-main { margin-top: 0; padding: 20px 16px; }
-  .hero-slogan { font-size: clamp(27px, 7.4vw, 36px); }
-  .hero-subtitle { font-size: 15px; }
-  .hero-description { max-width: 360px; font-size: 13px; }
+  .website-home .home-main { margin-top: 0; padding: 16px; }
   .site-dock .dock-surface { border-radius: 28px 28px 0 0; }
   .site-dock-content { padding-inline: 8px; gap: 0; }
   .site-dock-item { padding-inline: 2px; }
@@ -326,26 +245,6 @@ a.chrome-cta:active { transform: translateY(0); }
 
 @media (max-width: 380px) {
   .homepage-hero .model-label { display: none; }
-}
-
-@media (max-height: 680px) {
-  .homepage-hero .home-brand { margin-bottom: 10px; }
-  .hero-slogan { font-size: clamp(27px, 3.5vw, 36px); }
-  .hero-subtitle { margin-top: 10px; }
-  .homepage-hero .home-prompt { margin-block: 16px; }
-  .privacy-badge { margin-top: 10px; }
-}
-
-@media (max-height: 480px) and (min-width: 621px) {
-  .website-home .home-main { padding-block: 12px; }
-  .homepage-hero { display: grid; max-width: 1000px; grid-template-columns: 1fr 1fr; column-gap: 32px; justify-items: center; }
-  .homepage-hero .home-brand { display: none; }
-  .hero-slogan { grid-column: 1; grid-row: 1 / 3; font-size: 30px; }
-  .hero-subtitle { grid-column: 1; grid-row: 3; margin-top: 8px; font-size: 14px; }
-  .hero-description { grid-column: 1; grid-row: 4; font-size: 12px; }
-  .homepage-hero .home-prompt { grid-column: 2; grid-row: 1 / 3; margin: 0 0 12px; }
-  .chrome-cta { grid-column: 2; grid-row: 3; }
-  .privacy-badge { grid-column: 2; grid-row: 4; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -52,7 +52,13 @@ for (const page of pages) {
   for (const feature of siteFeatures) {
     assert.ok(html.includes(`href="${feature.path}"`), `${page.path}: crawlable ${feature.id} link`);
   }
-  assert.ok(html.includes('Chrome for browsing.') && html.includes('bytab for bookmarks.'), 'SSR homepage shell');
+  assert.ok(html.includes('class="home-brand-logo"') && html.includes('alt="bytab"'), `${page.path}: brand lockup`);
+  assert.ok(!html.includes('home-brand-wordmark'), `${page.path}: no separate wordmark text`);
+  assert.ok(html.includes('>Settings<'), `${page.path}: settings control`);
+  assert.ok(html.includes('09:41') && html.includes('Tuesday, November 10') && html.includes('Upcoming holiday'), `${page.path}: clock, date, holiday`);
+  assert.ok(html.includes('Ask anything...') && html.includes('Frequent Shortcuts'), `${page.path}: prompt and shortcuts`);
+  assert.ok(!html.includes('Last Opened') && !html.includes('Last Closed'), `${page.path}: no extension recent cards`);
+  assert.ok(!html.includes('home-clock'), `${page.path}: header clock removed`);
   if (page.windowTitle) {
     assert.ok(html.includes('role="dialog"'), `${page.path}: SSR dialog`);
     assert.equal(decode(html.match(/<h2 id="feature-window-title">([^<]*)<\/h2>/)?.[1]), page.windowTitle);
