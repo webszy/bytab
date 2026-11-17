@@ -2,6 +2,7 @@ import { defineConfig } from 'wxt';
 
 export default defineConfig({
   browser: 'chrome',
+  outDir: 'dist',
   modules: ['@wxt-dev/module-vue'],
   manifestVersion: 3,
   manifest: {

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 // Use an existing Playwright installation; no runtime or extension dependency.
 const { chromium } = await import(process.env.BYTAB_PLAYWRIGHT_MODULE || 'playwright');
-const extension = fileURLToPath(new URL('../.output/chrome-mv3', import.meta.url));
+const extension = fileURLToPath(new URL('../dist/chrome-mv3', import.meta.url));
 const output = fileURLToPath(new URL('../.output/bookmark-verification', import.meta.url));
 const profile = await mkdtemp(path.join(os.tmpdir(), 'bytab-bookmarks-'));
 await mkdir(output, { recursive: true });

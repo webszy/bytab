@@ -111,22 +111,22 @@ pnpm --filter ./apps/web typecheck
 
 ### 构建产物
 
-- 扩展生产目录：`apps/extension/.output/chrome-mv3/`。
-- 扩展开发目录：`apps/extension/.output/chrome-mv3-dev/`。
-- 扩展 ZIP：`apps/extension/.output/bytabextension-0.1.0-chrome.zip`，名称由 WXT 根据 Package 名和扩展版本自动生成。
+- 扩展生产目录：`apps/extension/dist/chrome-mv3/`。
+- 扩展开发目录：`apps/extension/dist/chrome-mv3-dev/`。
+- 扩展 ZIP：`apps/extension/dist/bytabextension-0.1.0-chrome.zip`，名称由 WXT 根据 Package 名和扩展版本自动生成。
 - 官网生产目录：`apps/web/.output/`。当前使用 Nuxt 默认生产构建，可通过 `pnpm --filter ./apps/web preview` 本地预览。
 
-`node_modules/`、WXT 的 `.wxt/`、Nuxt 的 `.nuxt/` 和各应用 `.output/` 均为生成文件，不能提交。环境变量、本地浏览器配置和 Cloudflare `.wrangler/` 也由根 `.gitignore` 排除。
+`node_modules/`、WXT 的 `.wxt/`、Nuxt 的 `.nuxt/`、扩展 `dist/` 和官网 `.output/` 均为生成文件，不能提交。环境变量、本地浏览器配置和 Cloudflare `.wrangler/` 也由根 `.gitignore` 排除。
 
 ### 在 Chrome 中验证扩展
 
 1. 执行 `pnpm build:ext`。
 2. 打开 `chrome://extensions/`，开启「开发者模式」。
-3. 点击「加载已解压的扩展程序」，选择 `apps/extension/.output/chrome-mv3/`。
+3. 点击「加载已解压的扩展程序」，选择 `apps/extension/dist/chrome-mv3/`。
 4. 新建标签页；如 Chrome 提示确认更改新标签页，选择保留更改。
 5. 确认浅色背景中央显示 `bytab.` 和 `Your bookmarks, beautifully organized.`。
 
-开发时也可以手动加载 `apps/extension/.output/chrome-mv3-dev/`，并保持 `pnpm dev:ext` 运行。如 Chrome 安装路径无法识别，可按 [WXT 浏览器启动配置](https://wxt.dev/guide/essentials/config/browser-startup.html) 在 `apps/extension/web-ext.config.ts` 中设置本机路径；此文件不提交。
+开发时也可以手动加载 `apps/extension/dist/chrome-mv3-dev/`，并保持 `pnpm dev:ext` 运行。如 Chrome 安装路径无法识别，可按 [WXT 浏览器启动配置](https://wxt.dev/guide/essentials/config/browser-startup.html) 在 `apps/extension/web-ext.config.ts` 中设置本机路径；此文件不提交。
 
 扩展通过 `apps/extension/entrypoints/newtab/index.html` 使用 WXT 原生 New Tab 入口，WXT 自动生成 `chrome_url_overrides.newtab`。扩展名称、版本、Chrome 目标、Manifest V3 和权限集中在 `apps/extension/wxt.config.ts`，不手工维护独立的 `manifest.json`。生产权限仅为 `bookmarks`；WXT 开发模式可能自动添加热更新所需权限。
 
