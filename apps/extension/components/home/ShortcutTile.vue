@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { shortcutIcon, type Shortcut } from '../../utils/shortcuts';
+import { shortcutIcon } from '../../utils/shortcuts';
+import { isShortcutFolder, type ShortcutEntry } from '../../utils/shortcutCollections';
 import HomeIcon from './HomeIcon.vue';
 
-const props = defineProps<{ shortcut: Shortcut; enabled?: boolean; busy?: boolean }>();
+const props = defineProps<{ shortcut: ShortcutEntry; enabled?: boolean; busy?: boolean }>();
 const emit = defineEmits<{
-  open: [shortcut: Shortcut];
-  edit: [shortcut: Shortcut];
-  drag: [shortcut: Shortcut, event: PointerEvent];
+  open: [shortcut: ShortcutEntry];
+  edit: [shortcut: ShortcutEntry];
+  drag: [shortcut: ShortcutEntry, event: PointerEvent];
 }>();
-const icon = computed(() => shortcutIcon(props.shortcut.url));
+const folder = computed(() => isShortcutFolder(props.shortcut));
+const icon = computed(() => isShortcutFolder(props.shortcut) ? 'folder' : shortcutIcon(props.shortcut.url));
 const initial = computed(() => Array.from(props.shortcut.title)[0]?.toLocaleUpperCase() ?? '');
 
 function onClick(event: MouseEvent) {
@@ -31,11 +33,13 @@ function onContextMenu(event: MouseEvent) {
 
 <template>
   <div class="shortcut-entry" :data-shortcut-id="shortcut.id">
-    <a
+    <component
+      :is="folder ? 'button' : 'a'"
+      :type="folder ? 'button' : undefined"
       class="shortcut-item"
       :class="[`shortcut-item--${icon || 'website'}`, { 'shortcut-item--managed': enabled }]"
-      :href="shortcut.url"
-      :title="`${shortcut.title} · ${shortcut.url}`"
+      :href="!isShortcutFolder(shortcut) ? shortcut.url : undefined"
+      :title="isShortcutFolder(shortcut) ? `Open folder ${shortcut.title}` : `${shortcut.title} · ${shortcut.url}`"
       :draggable="false"
       @click="onClick"
       @auxclick="onAuxClick"
@@ -47,7 +51,7 @@ function onContextMenu(event: MouseEvent) {
         <span v-else class="shortcut-monogram" aria-hidden="true">{{ initial }}</span>
       </span>
       <span class="shortcut-label">{{ shortcut.title }}</span>
-    </a>
+    </component>
     <button v-if="enabled" class="shortcut-edit" type="button" :aria-label="`Edit ${shortcut.title}`" :disabled="busy" @click="emit('edit', shortcut)">⋯</button>
   </div>
 </template>

@@ -299,9 +299,9 @@ try {
   await probe.getByRole('button', { name: 'Retry', exact: true }).click();
   await probe.waitForFunction(expected => document.querySelector('.dock-count')?.textContent === String(expected), fixture.count - 2);
   const callsBeforeSearch = await probe.evaluate(() => window.__bookmarkProbe.calls);
-  await probe.getByRole('combobox').fill('Bookmark');
-  await probe.getByRole('combobox').fill('example.test');
-  await probe.getByRole('combobox').fill('no-match');
+  await probe.getByRole('combobox', { name: 'Search all bookmarks' }).fill('Bookmark');
+  await probe.getByRole('combobox', { name: 'Search all bookmarks' }).fill('example.test');
+  await probe.getByRole('combobox', { name: 'Search all bookmarks' }).fill('no-match');
   assert.equal(await probe.evaluate(() => window.__bookmarkProbe.calls), callsBeforeSearch);
   await probe.evaluate(() => {
     window.__bookmarkProbe.fire('onChildrenReordered');

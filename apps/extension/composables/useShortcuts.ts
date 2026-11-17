@@ -1,35 +1,17 @@
 import { ref } from 'vue';
-import { defaultShortcuts, type Shortcut, type ShortcutPosition } from '../utils/shortcuts';
-import { isRecord, storageKeys, updateLocalValue, useLocalValue } from '../utils/storage';
+import { defaultShortcuts, type ShortcutPosition } from '../utils/shortcuts';
+import { storageKeys, updateLocalValue, useLocalValue } from '../utils/storage';
 import { websiteUrl } from '../utils/urls';
+import { isShortcutFolder, moveIntoFolder, parseShortcutEntries, removeShortcutEntry, type ShortcutEntry } from '../utils/shortcutCollections';
 
-function parseShortcuts(value: unknown): Shortcut[] {
-  if (!Array.isArray(value)) return defaultShortcuts.map(shortcut => ({ ...shortcut }));
-  const ids = new Set<string>();
-  return value.flatMap((item): Shortcut[] => {
-    if (!isRecord(item) || typeof item.id !== 'string' || !item.id || ids.has(item.id)
-      || typeof item.title !== 'string' || !item.title.trim()
-      || typeof item.url !== 'string' || !websiteUrl(item.url)) return [];
-    ids.add(item.id);
-    const shortcut: Shortcut = { id: item.id, title: item.title, url: item.url };
-    const position = item.position;
-    if (isRecord(position) && typeof position.x === 'number' && typeof position.y === 'number'
-      && Number.isFinite(position.x) && Number.isFinite(position.y)) {
-      shortcut.position = {
-        x: Math.min(1, Math.max(0, position.x)),
-        y: Math.min(1, Math.max(0, position.y)),
-      };
-    }
-    return [shortcut];
-  });
-}
+const parseShortcuts = (value: unknown) => parseShortcutEntries(value, defaultShortcuts);
 
 export function useShortcuts() {
   const stored = useLocalValue(storageKeys.shortcuts, defaultShortcuts, parseShortcuts);
   const saving = ref(false);
   const error = ref('');
 
-  async function change(update: (current: Shortcut[]) => Shortcut[]) {
+  async function change(update: (current: ShortcutEntry[]) => ShortcutEntry[]) {
     saving.value = true;
     error.value = '';
     try {
@@ -43,25 +25,40 @@ export function useShortcuts() {
     }
   }
 
-  async function save(id: string | null, title: string, inputUrl: string) {
+  async function save(id: string | null, title: string, inputUrl: string, folderId: string | null = null) {
     const url = websiteUrl(inputUrl);
     if (!title.trim() || !url) {
       error.value = 'Enter a name and a valid HTTP or HTTPS URL.';
       return false;
     }
     return change(current => {
-      if (id === null) {
-        return [...current, { id: crypto.randomUUID(), title: title.trim(), url: url.href }];
-      }
+      if (folderId && !current.some(item => item.id === folderId && isShortcutFolder(item))) throw new Error('This folder no longer exists.');
+      if (id === null) return [...current, { id: crypto.randomUUID(), title: title.trim(), url: url.href, ...(folderId ? { folderId } : {}) }];
       if (!current.some(item => item.id === id)) {
         throw new Error('This shortcut was deleted in another tab.');
       }
-      return current.map(item => item.id === id ? { ...item, title: title.trim(), url: url.href } : item);
+      const updated = current.map(item => item.id === id ? { ...item, title: title.trim(), url: url.href } : item);
+      const previous = current.find(item => item.id === id);
+      if (previous && !isShortcutFolder(previous) && (previous.folderId ?? null) === folderId) return updated;
+      return moveIntoFolder(updated, id, folderId);
     });
   }
 
+  function saveFolder(id: string | null, title: string) {
+    if (!title.trim()) { error.value = 'Enter a folder name.'; return Promise.resolve(false); }
+    return change(current => {
+      if (id === null) return [...current, { id: crypto.randomUUID(), title: title.trim(), kind: 'folder' }];
+      if (!current.some(item => item.id === id && isShortcutFolder(item))) throw new Error('This folder was deleted in another tab.');
+      return current.map(item => item.id === id ? { ...item, title: title.trim() } : item);
+    });
+  }
+
+  function moveToFolder(id: string, folderId: string | null) {
+    return change(current => moveIntoFolder(current, id, folderId));
+  }
+
   function remove(id: string) {
-    return change(current => current.filter(item => item.id !== id));
+    return change(current => removeShortcutEntry(current, id));
   }
 
   function move(id: string, position?: ShortcutPosition, beforeId?: string | null) {
@@ -69,7 +66,10 @@ export function useShortcuts() {
       const item = current.find(shortcut => shortcut.id === id);
       if (!item) return current;
       const moved = { ...item };
-      if (position) moved.position = position;
+      if (position) {
+        moved.position = position;
+        if (!isShortcutFolder(moved)) delete moved.folderId;
+      }
       else delete moved.position;
       if (beforeId === undefined) {
         return current.map(shortcut => shortcut.id === id ? moved : shortcut);
@@ -94,5 +94,5 @@ export function useShortcuts() {
     });
   }
 
-  return { items: stored.value, loading: stored.loading, loadError: stored.error, saving, error, save, remove, move, resetLayout };
+  return { items: stored.value, loading: stored.loading, loadError: stored.error, saving, error, save, saveFolder, remove, move, moveToFolder, resetLayout };
 }

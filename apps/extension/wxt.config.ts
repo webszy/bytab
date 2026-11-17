@@ -8,7 +8,7 @@ export default defineConfig({
   manifest: {
     name: 'bytab',
     description: 'A clean new tab for your bookmarks.',
-    version: '0.1.0',
+    version: '0.0.1',
     permissions: ['bookmarks', 'storage', 'sessions'],
   },
 });

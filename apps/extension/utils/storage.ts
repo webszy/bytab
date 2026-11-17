@@ -4,7 +4,9 @@ import { browser, type Browser } from 'wxt/browser';
 export const storageKeys = {
   lastOpened: 'bytab.lastOpened',
   shortcuts: 'bytab.shortcuts',
+  shortcutBar: 'bytab.shortcutBar',
   background: 'bytab.background',
+  promptProvider: 'bytab.promptProvider',
 } as const;
 
 export function useLocalValue<T>(key: string, initial: T, parse: (value: unknown) => T) {

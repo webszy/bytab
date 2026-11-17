@@ -2,7 +2,7 @@
   "name": "@bytab/extension",
   "description": "A clean new tab for your bookmarks.",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "wxt -b chrome",
@@ -10,9 +10,12 @@
     "zip": "wxt zip -b chrome",
     "compile": "vue-tsc --noEmit",
     "typecheck": "pnpm compile",
-    "test": "node --test tests/bookmark-tree.test.mjs",
+    "test": "node --test tests/*.test.mjs",
     "test:browser": "node tests/bookmarks.browser.mjs",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "test:prompt:browser": "node tests/prompt.browser.mjs",
+    "test:shortcuts:browser": "node tests/shortcuts.browser.mjs",
+    "test:dock:browser": "node tests/dock.browser.mjs"
   },
   "dependencies": {
     "vue": "^3.5.29"

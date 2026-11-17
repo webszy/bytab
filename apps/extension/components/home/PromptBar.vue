@@ -10,6 +10,7 @@ const models = [
   { id: 'chatgpt', label: 'ChatGPT' },
   { id: 'gemini', label: 'Gemini' },
   { id: 'claude', label: 'Claude' },
+  { id: 'grok', label: 'Grok' },
   { id: 'google', label: 'Google' },
 ] as const;
 
@@ -105,10 +106,10 @@ onBeforeUnmount(() => { document.removeEventListener('pointerdown', onOutsidePoi
           @keydown.up.prevent="openMenu"
         >
           <span class="model-avatar" :class="`model-avatar--${models[selectedIndex]!.id}`">
-            <HomeIcon v-if="selectedIndex === 0" name="chatgpt-mark" />
-            <HomeIcon v-else-if="selectedIndex === 3" name="google" />
-            <HomeIcon v-else-if="selectedIndex === 1" name="sparkle" />
-            <span v-else aria-hidden="true">C</span>
+            <HomeIcon v-if="models[selectedIndex]!.id === 'chatgpt'" name="chatgpt-mark" />
+            <HomeIcon v-else-if="models[selectedIndex]!.id === 'google'" name="google" />
+            <HomeIcon v-else-if="models[selectedIndex]!.id === 'gemini'" name="sparkle" />
+            <span v-else aria-hidden="true">{{ models[selectedIndex]!.label.charAt(0) }}</span>
           </span>
           <span class="model-label">{{ models[selectedIndex]!.label }}</span>
           <HomeIcon name="chevron" class="model-chevron" />

@@ -1,19 +1,16 @@
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import { browser } from 'wxt/browser';
 import { deleteBackground, prepareBackground, readBackground, writeBackground } from '../utils/background-db';
-import { isRecord, storageKeys, useLocalValue, withLocalLock } from '../utils/storage';
+import { storageKeys, useLocalValue, withLocalLock } from '../utils/storage';
 
-type BackgroundSettings = { kind: 'default' } | { kind: 'custom'; imageId: string };
-
-function parseBackground(value: unknown): BackgroundSettings {
-  if (isRecord(value) && value.kind === 'custom' && typeof value.imageId === 'string' && value.imageId) {
-    return { kind: 'custom', imageId: value.imageId };
-  }
-  return { kind: 'default' };
-}
+import { parseAppearance, type AppearanceSettings, type DockPosition } from '../utils/appearance';
 
 export function useBackground() {
-  const stored = useLocalValue<BackgroundSettings>(storageKeys.background, { kind: 'default' }, parseBackground);
+  const stored = useLocalValue<AppearanceSettings>(storageKeys.background, parseAppearance(null), parseAppearance);
+  const dockSaving = ref(false);
+  const dockError = ref('');
+  const pendingDock = ref<DockPosition>();
+  const dockPosition = computed(() => pendingDock.value ?? stored.value.value.dockPosition);
   const activeUrl = ref('');
   const draftUrl = ref('');
   const draftBlob = shallowRef<Blob | null>(null);
@@ -36,15 +33,15 @@ export function useBackground() {
     if (previous) URL.revokeObjectURL(previous);
   }
 
-  watch(stored.value, async settings => {
+  watch(() => stored.value.value.kind === 'custom' ? stored.value.value.imageId : '', async imageId => {
     const request = ++loadRevision;
-    if (settings.kind === 'default') {
+    if (!imageId) {
       replaceUrl(activeUrl, '');
       imageError.value = '';
       return;
     }
     try {
-      const blob = await readBackground(settings.imageId);
+      const blob = await readBackground(imageId);
       if (!(blob instanceof Blob)) throw new Error('The saved image is missing.');
       const bitmap = await createImageBitmap(blob);
       bitmap.close();
@@ -100,10 +97,10 @@ export function useBackground() {
     error.value = '';
     try {
       await withLocalLock(storageKeys.background, async () => {
-        const previous = parseBackground((await browser.storage.local.get(storageKeys.background))[storageKeys.background]);
-        const next: BackgroundSettings = blob
-          ? { kind: 'custom', imageId: crypto.randomUUID() }
-          : { kind: 'default' };
+        const previous = parseAppearance((await browser.storage.local.get(storageKeys.background))[storageKeys.background]);
+        const next: AppearanceSettings = blob
+          ? { ...previous, kind: 'custom', imageId: crypto.randomUUID() }
+          : parseAppearance({ ...previous, kind: 'default' });
         if (next.kind === 'custom' && blob) await writeBackground(next.imageId, blob);
         try {
           await browser.storage.local.set({ [storageKeys.background]: next });
@@ -124,6 +121,26 @@ export function useBackground() {
     }
   }
 
+  async function setDockPosition(position: DockPosition) {
+    if (dockSaving.value || stored.loading.value) return;
+    pendingDock.value = position;
+    dockSaving.value = true;
+    dockError.value = '';
+    try {
+      await withLocalLock(storageKeys.background, async () => {
+        const previous = parseAppearance((await browser.storage.local.get(storageKeys.background))[storageKeys.background]);
+        const next = parseAppearance({ ...previous, dockPosition: position });
+        await browser.storage.local.set({ [storageKeys.background]: next });
+        stored.value.value = next;
+      });
+    } catch {
+      dockError.value = 'Could not save Dock position. Try again.';
+    } finally {
+      pendingDock.value = undefined;
+      dockSaving.value = false;
+    }
+  }
+
   async function restoreDefault() {
     selectDefault();
     return apply();
@@ -138,6 +155,7 @@ export function useBackground() {
   });
 
   return {
+    dockPosition, dockSaving, dockError, setDockPosition,
     activeUrl, previewUrl, preparing, saving, error: computed(() => error.value || imageError.value),
     loading: stored.loading, loadError: stored.error,
     begin, selectFile, selectDefault, apply, restoreDefault,

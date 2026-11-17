@@ -5,7 +5,7 @@ import BookmarkDock from '@/components/home/BookmarkDock.vue';
 import HolidayInfo from '@/components/home/HolidayInfo.vue';
 import HomeClock from '@/components/home/HomeClock.vue';
 import HomeTopBar from '@/components/home/HomeTopBar.vue';
-import PromptBar from '@/components/home/PromptBar.vue';
+import ExtensionPromptBar from '@/components/home/ExtensionPromptBar.vue';
 import RecentPagesRow from '@/components/home/RecentPagesRow.vue';
 import ShortcutEditor from '@/components/home/ShortcutEditor.vue';
 import ShortcutsPanel from '@/components/home/ShortcutsPanel.vue';
@@ -14,13 +14,14 @@ import { useBookmarks } from '@/composables/useBookmarks';
 import { useClock } from '@/composables/useClock';
 import { useLastClosed } from '@/composables/useLastClosed';
 import { useLastOpened } from '@/composables/useLastOpened';
-import { usePromptNavigation } from '@/composables/usePromptNavigation';
+import { useShortcutBar } from '@/composables/useShortcutBar';
 import { useShortcuts } from '@/composables/useShortcuts';
 import { holidayLabel } from '@/utils/holidays';
 import { openWebsite } from '@/utils/navigation';
-import type { Shortcut } from '@/utils/shortcuts';
+import { isShortcutFolder, type ShortcutEntry } from '@/utils/shortcutCollections';
 import '@/assets/styles/home.css';
 import '@/assets/styles/interactions.css';
+import '@/assets/styles/dock-position.css';
 
 const bookmarks = useBookmarks();
 const { catalog, bookmarkCount, loading: bookmarksLoading, error: bookmarksError } = bookmarks;
@@ -30,16 +31,19 @@ const { value: lastOpened, loading: openedLoading, error: openedError } = useLas
 const closed = useLastClosed();
 const { session: closedSession, title: closedTitle, hostname: closedHostname, loading: closedLoading, restoring, error: closedError } = closed;
 const background = useBackground();
-const { activeUrl, previewUrl, preparing, saving: backgroundSaving, loading: backgroundLoading, error: backgroundError, loadError: backgroundLoadError } = background;
+const { dockPosition, dockSaving, dockError, activeUrl, previewUrl, preparing, saving: backgroundSaving, loading: backgroundLoading, error: backgroundError, loadError: backgroundLoadError } = background;
 const shortcuts = useShortcuts();
 const { items: shortcutItems, loading: shortcutsLoading, saving: shortcutsSaving, error: shortcutsError, loadError: shortcutsLoadError } = shortcuts;
-const prompt = usePromptNavigation();
-const { busy: promptBusy, feedback: promptFeedback, manualCopy } = prompt;
+const bar = useShortcutBar();
+const { layout: barLayout, saving: barSaving, loading: barLoading, error: barError, loadError: barLoadError } = bar;
+const shortcutFolders = computed(() => shortcutItems.value.filter(isShortcutFolder));
+const newFolder = ref(false);
+const newShortcutFolderId = ref<string | null>(null);
 const settingsOpen = ref(false);
 const editorOpen = ref(false);
-const editingShortcut = shallowRef<Shortcut | null>(null);
+const editingShortcut = shallowRef<ShortcutEntry | null>(null);
 const navigationError = ref('');
-const notice = computed(() => navigationError.value || shortcutsLoadError.value
+const notice = computed(() => navigationError.value || shortcutsLoadError.value || barError.value || barLoadError.value
   || (!editorOpen.value && shortcutsError.value)
   || (!settingsOpen.value && (backgroundError.value || backgroundLoadError.value)));
 
@@ -70,14 +74,28 @@ async function restoreBackground() {
   if (await background.restoreDefault()) closeSettings();
 }
 
-function editShortcut(shortcut: Shortcut | null) {
+function editShortcut(shortcut: ShortcutEntry | null, folder = false, folderId: string | null = null) {
   editingShortcut.value = shortcut;
+  newFolder.value = folder || !!(shortcut && isShortcutFolder(shortcut));
+  newShortcutFolderId.value = folderId;
   shortcutsError.value = '';
   editorOpen.value = true;
 }
 
-async function saveShortcut(title: string, url: string) {
-  if (await shortcuts.save(editingShortcut.value?.id ?? null, title, url)) editorOpen.value = false;
+async function saveShortcut(title: string, url: string, folderId: string | null) {
+  const saved = newFolder.value
+    ? await shortcuts.saveFolder(editingShortcut.value?.id ?? null, title)
+    : await shortcuts.save(editingShortcut.value?.id ?? null, title, url, folderId);
+  if (saved) editorOpen.value = false;
+}
+
+function openShortcut(item: ShortcutEntry) {
+  if (!isShortcutFolder(item)) void openSite(item.title, item.url);
+}
+
+async function resetShortcuts() {
+  await shortcuts.resetLayout();
+  await bar.save({ pinned: false });
 }
 
 async function removeShortcut() {
@@ -90,7 +108,7 @@ async function alignShortcut() {
 </script>
 
 <template>
-  <div class="home-page" :style="activeUrl ? { '--home-wallpaper': `url('${activeUrl}')` } : undefined">
+  <div class="home-page" :data-dock-position="dockPosition" :style="activeUrl ? { '--home-wallpaper': `url('${activeUrl}')` } : undefined">
     <div class="home-background" aria-hidden="true" />
     <HomeTopBar :bookmark-count="bookmarkCount" :bookmarks-unavailable="!!bookmarksError" @settings="openSettings" />
     <div id="home-shortcut-layer" class="shortcut-layout" />
@@ -111,22 +129,28 @@ async function alignShortcut() {
         @reopen="lastOpened && openSite(lastOpened.title, lastOpened.url)"
         @restore="closedSession ? closed.restore() : closed.refresh()"
       />
-      <PromptBar enabled :busy="promptBusy" :feedback="promptFeedback" :manual-copy="manualCopy" @send="prompt.send" />
+      <ExtensionPromptBar :bookmarks="bookmarksError ? [] : catalog.searchIndex" />
       <ShortcutsPanel
         enabled
         :shortcuts="shortcutItems"
         :loading="shortcutsLoading"
         :busy="shortcutsSaving"
+        :bar-layout="barLayout"
+        :bar-busy="barSaving || barLoading"
         layout-target="#home-shortcut-layer"
-        @open="openSite($event.title, $event.url)"
-        @add="editShortcut(null)"
+        @open="openShortcut"
+        @add="editShortcut(null, false, $event)"
+        @add-folder="editShortcut(null, true)"
+        @save-bar="bar.save"
+        @move-to-folder="shortcuts.moveToFolder"
         @edit="editShortcut"
         @move="shortcuts.move"
-        @reset-layout="shortcuts.resetLayout"
+        @reset-layout="resetShortcuts"
       />
     </main>
     <div class="home-bottom-buffer" aria-hidden="true" />
     <BookmarkDock
+      :position="dockPosition"
       :bookmark-count="bookmarkCount"
       :catalog="catalog"
       :loading="bookmarksLoading"
@@ -136,6 +160,10 @@ async function alignShortcut() {
     />
     <BackgroundSettings
       v-if="settingsOpen"
+      :dock-position="dockPosition"
+      :dock-saving="dockSaving"
+      :dock-error="dockError"
+      @position="background.setDockPosition"
       :preview-url="previewUrl"
       :preparing="preparing"
       :saving="backgroundSaving"
@@ -150,6 +178,9 @@ async function alignShortcut() {
     <ShortcutEditor
       v-if="editorOpen"
       :shortcut="editingShortcut"
+      :folder="newFolder"
+      :folder-id="newShortcutFolderId"
+      :folders="shortcutFolders"
       :saving="shortcutsSaving"
       :error="shortcutsError"
       @close="editorOpen = false"
@@ -159,3 +190,9 @@ async function alignShortcut() {
     />
   </div>
 </template>
+
+<style scoped>
+/* Let the Prompt Bar's own z-index sit above detached shortcut tiles (25)
+   while retaining the Dock (40) and dialog layers above it. No layout changes. */
+.home-main { z-index: auto; }
+</style>

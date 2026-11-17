@@ -11,6 +11,7 @@ export interface Shortcut {
   title: string;
   url: string;
   position?: ShortcutPosition;
+  folderId?: string;
 }
 
 export const defaultShortcuts: Shortcut[] = [

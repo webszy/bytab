@@ -412,6 +412,7 @@
 
 .model-avatar--gemini { background: #0071e3; }
 .model-avatar--claude { background: #d97757; }
+.model-avatar--grok { background: #1d1d1f; }
 .model-avatar--google { background: white; }
 .model-avatar--google .home-icon { width: 14px; height: 14px; }
 
@@ -594,14 +595,12 @@ a.shortcut-item--chatgpt:hover .shortcut-tile { transform: scale(1.05); box-shad
 .dock-surface {
   position: absolute;
   inset: 0;
-  border: 1px solid rgb(255 255 255 / 75%);
-  border-top-color: rgb(255 255 255 / 95%);
-  border-bottom: 0;
+  border-top: 1px solid rgb(255 255 255 / 55%);
   border-radius: 36px 36px 0 0;
-  background: rgb(255 255 255 / 82%);
-  -webkit-backdrop-filter: blur(32px) saturate(190%);
-  backdrop-filter: blur(32px) saturate(190%);
-  box-shadow: 0 -14px 40px -8px rgb(0 0 0 / 12%), 0 -2px 10px rgb(0 0 0 / 4%), inset 0 1px 0 rgb(255 255 255 / 95%);
+  background: rgb(255 255 255 / 42%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: 0 -8px 28px -12px rgb(0 0 0 / 10%);
   pointer-events: none;
 }
 

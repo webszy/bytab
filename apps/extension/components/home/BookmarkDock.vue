@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import type { DockPosition } from '../../utils/appearance';
 import type { BookmarkCatalog } from '../../utils/bookmarkTree';
 import { folderLabel } from '../../utils/bookmarkTree';
 import BookmarkPanel from './BookmarkPanel.vue';
 import HomeIcon from './HomeIcon.vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
+  position?: DockPosition;
   bookmarkCount: number | null;
   catalog: BookmarkCatalog;
   loading: boolean;
   error: string;
-}>();
+}>(), { position: 'bottom' });
 const emit = defineEmits<{ open: [title: string, url: string]; retry: [] }>();
 const dock = ref<HTMLElement | null>(null);
 const navigation = ref<HTMLElement | null>(null);
@@ -24,7 +26,8 @@ const folderColors = ['development', 'design', 'ai', 'work', 'reading'];
 let previousFocus: HTMLElement | null = null;
 let resizeObserver: ResizeObserver | undefined;
 
-const visibleCount = computed(() => props.catalog.folders.length > capacity.value
+const isHorizontal = computed(() => props.position === 'bottom' || props.position === 'top');
+const visibleCount = computed(() => !isHorizontal.value ? props.catalog.folders.length : props.catalog.folders.length > capacity.value
   ? Math.max(0, capacity.value - 1) : capacity.value);
 const visibleFolders = computed(() => props.catalog.folders.slice(0, visibleCount.value));
 const overflowFolders = computed(() => props.catalog.folders.slice(visibleCount.value));
@@ -84,6 +87,11 @@ function onEscape(event: KeyboardEvent) {
   }
 }
 
+watch(() => props.position, () => {
+  showMore.value = false;
+  void nextTick(measureCategories);
+});
+
 onMounted(() => {
   measureCategories();
   resizeObserver = new ResizeObserver(measureCategories);
@@ -99,7 +107,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <footer ref="dock" class="bookmark-dock" aria-label="Bookmark dock">
+  <footer ref="dock" class="bookmark-dock" :data-position="position" aria-label="Bookmark dock">
     <BookmarkPanel
       v-if="panelOpen"
       id="bookmark-panel"

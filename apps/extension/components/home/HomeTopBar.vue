@@ -24,7 +24,7 @@ defineEmits<{ settings: [] }>();
       class="home-appearance"
       type="button"
       aria-label="Settings"
-      title="Background settings"
+      title="Appearance"
       @click="$emit('settings')"
     >
       <HomeIcon name="settings" />
