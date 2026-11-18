@@ -17,6 +17,10 @@ const logos = { chatgpt, claude, grok, gemini, google, bing };
 </template>
 
 <style scoped>
-.model-avatar { background: transparent; border-radius: 0; }
+.model-avatar {
+  grid-template: 100% / 100%;
+  background: transparent;
+  border-radius: 0;
+}
 .model-avatar img { display: block; width: 18px; height: 18px; object-fit: contain; }
 </style>

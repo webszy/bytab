@@ -1,12 +1,36 @@
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import { browser } from 'wxt/browser';
 import { deleteBackground, prepareBackground, readBackground, writeBackground } from '../utils/background-db';
-import { storageKeys, useLocalValue, withLocalLock } from '../utils/storage';
+import { storageKeys, updateLocalValue, useLocalValue, withLocalLock } from '../utils/storage';
 
-import { parseAppearance, type AppearanceSettings, type DockPosition } from '../utils/appearance';
+import { parseAppearance, readGlassTints, type AppearanceSettings, type DockPosition, type GlassMode } from '../utils/appearance';
 
 export function useBackground() {
   const stored = useLocalValue<AppearanceSettings>(storageKeys.background, parseAppearance(null), parseAppearance);
+  const tintPreview = ref<Partial<Record<GlassMode, number>>>({});
+  const glassTints = computed(() => ({ ...readGlassTints(stored.value.value), ...tintPreview.value }));
+  const tintError = ref('');
+  const tintRevision = { light: 0, dark: 0 };
+
+  function previewTint(mode: GlassMode, value: number) {
+    tintRevision[mode]++;
+    tintPreview.value[mode] = value;
+    tintError.value = '';
+  }
+
+  async function saveTint(mode: GlassMode, value: number) {
+    const revision = ++tintRevision[mode];
+    try {
+      await updateLocalValue(storageKeys.background, parseAppearance, current => ({
+        ...current, glassTints: { ...readGlassTints(current), [mode]: value },
+      }));
+    } catch {
+      if (revision === tintRevision[mode]) tintError.value = 'Could not save glass tint. Try again.';
+    } finally {
+      if (revision === tintRevision[mode]) delete tintPreview.value[mode];
+    }
+  }
+
   const dockSaving = ref(false);
   const dockError = ref('');
   const pendingDock = ref<DockPosition>();
@@ -155,6 +179,7 @@ export function useBackground() {
   });
 
   return {
+    glassTints, tintError, previewTint, saveTint,
     dockPosition, dockSaving, dockError, setDockPosition,
     activeUrl, previewUrl, preparing, saving, error: computed(() => error.value || imageError.value),
     loading: stored.loading, loadError: stored.error,

@@ -78,11 +78,11 @@ try {
   });
   await countIs(fixture.count);
   const manifestPermissions = await page.evaluate(() => chrome.runtime.getManifest().permissions);
-  assert.deepEqual(manifestPermissions.sort(), ['bookmarks', 'sessions', 'storage']);
+  assert.deepEqual(manifestPermissions.sort(), ['bookmarks', 'scripting', 'sessions', 'storage']);
   // Recent Chromium versions also report the implicit New Tab override grant.
   assert.ok(fixture.permission.permissions.every(permission => manifestPermissions.includes(permission) || permission === 'newTabPageOverride'));
   await category('Development').waitFor();
-  record('507 real Chrome bookmarks, native ordering and unchanged permissions');
+  record('507 real Chrome bookmarks, native ordering and expected permissions');
 
   await rootButton.click();
   await panel.getByRole('button', { name: new RegExp(`^${fixture.bar.title}`) }).click();

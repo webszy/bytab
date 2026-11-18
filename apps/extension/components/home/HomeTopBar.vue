@@ -2,7 +2,7 @@
 import brandLogo from '../../../shared/ByTab_Brand_Kit_v1.0/02_Logo_Lockups/horizontal-charcoal-minimal.svg?url';
 import HomeIcon from './HomeIcon.vue';
 
-defineProps<{ bookmarkCount: number | null; bookmarksUnavailable: boolean }>();
+defineProps<{ bookmarksUnavailable: boolean }>();
 defineEmits<{ settings: [] }>();
 </script>
 
@@ -13,11 +13,11 @@ defineEmits<{ settings: [] }>();
         <img class="home-brand-logo" :src="brandLogo" alt="bytab" />
       </h1>
       <span class="home-brand-divider" aria-hidden="true" />
-      <p class="home-bookmark-count">
-        <template v-if="bookmarksUnavailable">Bookmarks unavailable</template>
-        <template v-else-if="bookmarkCount === null">—</template>
-        <template v-else>{{ bookmarkCount.toLocaleString() }} {{ bookmarkCount === 1 ? 'Bookmark' : 'Bookmarks' }}</template>
-      </p>
+      <p class="home-brand-tagline">Start your day.<br />Start with bytab.</p>
+      <template v-if="bookmarksUnavailable">
+        <span class="home-brand-divider" aria-hidden="true" />
+        <p class="home-bookmark-status">Bookmarks unavailable</p>
+      </template>
     </div>
 
     <button

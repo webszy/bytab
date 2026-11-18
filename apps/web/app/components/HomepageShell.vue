@@ -2,10 +2,12 @@
 import type { SiteFeature } from '#shared/site';
 
 defineProps<{ feature?: SiteFeature }>();
+const homepage = useTemplateRef<HTMLElement>('homepage');
+const glassTints = useHomepageGlass(homepage);
 </script>
 
 <template>
-  <div class="home-page website-home">
+  <div ref="homepage" class="home-page website-home" :style="glassTints">
     <div class="home-background" aria-hidden="true" />
     <SiteHeader :inert="Boolean(feature)" />
     <main class="home-main" :inert="Boolean(feature)">

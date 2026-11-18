@@ -5,7 +5,7 @@ import { searchPromptBookmarks } from '../utils/promptBookmarks.ts';
 
 const entry = (id, title, url = `https://example.test/${id}`) => ({ node: { id, title, url }, text: `${title} ${url}`.toLowerCase(), folderPath: 'Test' });
 
-test('provider allowlist builds exact encoded destinations and never enables Gemini', () => {
+test('provider allowlist builds exact encoded destinations and keeps Gemini prompts out of URLs', () => {
   const text = '中文 prompt\nline 2 &?#=+% 😀';
   const bases = {
     chatgpt: 'https://chatgpt.com/?prompt=', claude: 'https://claude.ai/new?q=', grok: 'https://grok.com/?q=',
@@ -16,7 +16,9 @@ test('provider allowlist builds exact encoded destinations and never enables Gem
     assert.equal(promptDestination(id, ' \n '), null);
     assert.equal(parsePromptProvider(id), id);
   }
-  for (const id of ['gemini', 'bookmarks', 'https://evil.example', '__proto__', undefined, {}]) {
+  assert.equal(parsePromptProvider('gemini'), 'gemini');
+  assert.equal(promptDestination('gemini', text), null);
+  for (const id of ['bookmarks', 'https://evil.example', '__proto__', undefined, {}]) {
     assert.equal(promptDestination(id, text), null);
     assert.equal(parsePromptProvider(id), 'chatgpt');
   }

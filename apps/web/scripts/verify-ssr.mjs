@@ -10,6 +10,7 @@ const pages = [
   ...siteFeatures.map(feature => ({
     path: feature.path, title: feature.seoTitle, description: feature.seoDescription,
     windowTitle: feature.title,
+    hasGlassSettings: feature.id === 'appearance',
   })),
 ];
 
@@ -62,13 +63,27 @@ for (const page of pages) {
   if (page.windowTitle) {
     assert.ok(html.includes('role="dialog"'), `${page.path}: SSR dialog`);
     assert.equal(decode(html.match(/<h2 id="feature-window-title">([^<]*)<\/h2>/)?.[1]), page.windowTitle);
-    assert.ok(html.includes('<div class="feature-whiteboard"></div>'), `${page.path}: empty SSR whiteboard`);
+    if (page.hasGlassSettings) {
+      const controls = html.match(/<input\b[^>]*>/g) || [];
+      for (const mode of ['light', 'dark']) {
+        const id = `glass-tint-${mode}`;
+        const control = controls.find(tag => attribute(tag, 'id') === id);
+        assert.ok(control, `${page.path}: ${mode} tint control`);
+        assert.equal(attribute(control, 'type'), 'range');
+        assert.equal(attribute(control, 'min'), '0');
+        assert.equal(attribute(control, 'max'), '1.5');
+        assert.ok(html.includes(`<label for="${id}">`), `${page.path}: ${mode} tint label`);
+      }
+    } else {
+      assert.ok(html.includes('<div class="feature-whiteboard"></div>'), `${page.path}: empty SSR whiteboard`);
+    }
     const activeLink = (html.match(/<a\b[^>]*>/g) || []).find(tag => attribute(tag, 'href') === page.path && attribute(tag, 'id').startsWith('dock-'));
     assert.equal(attribute(activeLink || '', 'aria-current'), 'page', `${page.path}: active Dock`);
   } else {
     assert.ok(!html.includes('role="dialog"'), 'Homepage has no open dialog');
   }
-  console.log(`PASS ${page.path}: SSR, SEO, canonical, crawlable Dock${page.windowTitle ? ', empty modal' : ''}`);
+  const panel = page.hasGlassSettings ? ', appearance controls' : page.windowTitle ? ', empty modal' : '';
+  console.log(`PASS ${page.path}: SSR, SEO, canonical, crawlable Dock${panel}`);
 }
 
 for (const path of assets) {

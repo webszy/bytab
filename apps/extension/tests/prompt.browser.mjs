@@ -156,22 +156,22 @@ try {
   record('all five provider URLs, trim, Chinese/special characters/newlines, no prompt stored');
 
   await trigger.click();
-  assert.equal(await page.locator('[data-provider="gemini"]').isDisabled(), true);
-  assert.match(await page.locator('[data-provider="gemini"]').textContent(), /Coming Soon/);
+  assert.equal(await page.locator('[data-provider="gemini"]').isDisabled(), false);
+  assert.doesNotMatch(await page.locator('[data-provider="gemini"]').textContent(), /Coming Soon/);
   assert.equal(await page.getByRole('group', { name: 'AI Assistants', exact: true }).count(), 1);
   assert.equal(await page.getByRole('group', { name: 'Web Search', exact: true }).count(), 1);
   await page.locator('[data-provider="bing"]').press('ArrowUp');
   assert.equal(await page.evaluate(() => document.activeElement.dataset.provider), 'google');
   await page.locator('[data-provider="google"]').press('ArrowUp');
-  assert.equal(await page.evaluate(() => document.activeElement.dataset.provider), 'grok');
+  assert.equal(await page.evaluate(() => document.activeElement.dataset.provider), 'gemini');
   await page.screenshot({ path: path.join(output, 'providers.png') });
-  await page.keyboard.press('Escape');
+  await page.keyboard.press('Enter');
   const second = await context.newPage(); await second.goto(extensionUrl);
-  await second.waitForFunction(() => document.querySelector('.model-label')?.textContent === 'Bing');
+  await second.waitForFunction(() => document.querySelector('.model-label')?.textContent === 'Gemini');
   await choose('claude');
   await second.waitForFunction(() => document.querySelector('.model-label')?.textContent === 'Claude');
   await second.close();
-  record('Gemini disabled, grouped menu, keyboard skips disabled option, new-tab and live provider persistence');
+  record('Gemini enabled and keyboard selectable, grouped menu, new-tab and live provider persistence');
 
   await fill('github'); await countIs(6); await input.press('ArrowDown');
   await page.evaluate(id => chrome.bookmarks.update(id, { title: 'Renamed', url: 'https://example.test/renamed' }), fixture.entries[3].id);
@@ -221,7 +221,7 @@ try {
     await fill('github'); await countIs(6);
   }
   record('outside dismissal and responsive floating results without page overflow');
-  assert.deepEqual(await page.evaluate(() => chrome.runtime.getManifest().permissions.sort()), ['bookmarks', 'sessions', 'storage']);
+  assert.deepEqual(await page.evaluate(() => chrome.runtime.getManifest().permissions.sort()), ['bookmarks', 'scripting', 'sessions', 'storage']);
   assert.deepEqual(errors, []);
   assert.deepEqual(requests, [], 'search and captured submissions make no external requests');
   await writeFile(path.join(output, 'results.json'), JSON.stringify({ checks, errors, requests, note: 'chrome.tabs.create targets captured; real blank tabs opened to prevent external requests. Verifies navigation API URLs, not third-party page rendering/prefill.', testedAt: new Date().toISOString() }, null, 2));

@@ -15,3 +15,14 @@ export function parseAppearance(value: unknown): AppearanceSettings {
   const { imageId: _unused, ...rest } = source;
   return { ...rest, kind: 'default', dockPosition };
 }
+
+export type GlassMode = 'light' | 'dark';
+
+export function readGlassTints(settings: AppearanceSettings): Record<GlassMode, number> {
+  const tints = settings.glassTints;
+  const values = typeof tints === 'object' && tints !== null ? tints as Record<string, unknown> : {};
+  function strength(value: unknown) {
+    return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(1.5, value)) : 1;
+  }
+  return { light: strength(values.light), dark: strength(values.dark) };
+}

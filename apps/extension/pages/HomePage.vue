@@ -11,6 +11,7 @@ import ShortcutEditor from '@/components/home/ShortcutEditor.vue';
 import ShortcutsPanel from '@/components/home/ShortcutsPanel.vue';
 import { useBackground } from '@/composables/useBackground';
 import { useBookmarks } from '@/composables/useBookmarks';
+import { useExtensionGlass } from '@/composables/useExtensionGlass';
 import { useClock } from '@/composables/useClock';
 import { useLastClosed } from '@/composables/useLastClosed';
 import { useLastOpened } from '@/composables/useLastOpened';
@@ -22,7 +23,10 @@ import { isShortcutFolder, type ShortcutEntry } from '@/utils/shortcutCollection
 import '@/assets/styles/home.css';
 import '@/assets/styles/interactions.css';
 import '@/assets/styles/dock-position.css';
+import '@/assets/styles/liquid-glass.css';
 
+const homepage = ref<HTMLElement | null>(null);
+useExtensionGlass(homepage);
 const bookmarks = useBookmarks();
 const { catalog, bookmarkCount, loading: bookmarksLoading, error: bookmarksError } = bookmarks;
 const { now, time, date, locale } = useClock();
@@ -32,6 +36,12 @@ const closed = useLastClosed();
 const { session: closedSession, title: closedTitle, hostname: closedHostname, loading: closedLoading, restoring, error: closedError } = closed;
 const background = useBackground();
 const { dockPosition, dockSaving, dockError, activeUrl, previewUrl, preparing, saving: backgroundSaving, loading: backgroundLoading, error: backgroundError, loadError: backgroundLoadError } = background;
+const { glassTints, tintError } = background;
+const homepageStyle = computed(() => ({
+  '--home-wallpaper': activeUrl.value ? `url('${activeUrl.value}')` : undefined,
+  '--glass-light-tint': String(glassTints.value.light),
+  '--glass-dark-tint': String(glassTints.value.dark),
+}));
 const shortcuts = useShortcuts();
 const { items: shortcutItems, loading: shortcutsLoading, saving: shortcutsSaving, error: shortcutsError, loadError: shortcutsLoadError } = shortcuts;
 const bar = useShortcutBar();
@@ -108,9 +118,9 @@ async function alignShortcut() {
 </script>
 
 <template>
-  <div class="home-page" :data-dock-position="dockPosition" :style="activeUrl ? { '--home-wallpaper': `url('${activeUrl}')` } : undefined">
+  <div ref="homepage" class="home-page extension-home" :data-dock-position="dockPosition" :style="homepageStyle">
     <div class="home-background" aria-hidden="true" />
-    <HomeTopBar :bookmark-count="bookmarkCount" :bookmarks-unavailable="!!bookmarksError" @settings="openSettings" />
+    <HomeTopBar :bookmarks-unavailable="!!bookmarksError" @settings="openSettings" />
     <div id="home-shortcut-layer" class="shortcut-layout" />
     <p v-if="notice" class="home-notice" role="status">{{ notice }}</p>
     <main class="home-main">
@@ -161,6 +171,10 @@ async function alignShortcut() {
     <BackgroundSettings
       v-if="settingsOpen"
       :dock-position="dockPosition"
+      :glass-tints="glassTints"
+      :tint-error="tintError"
+      @preview-tint="background.previewTint"
+      @save-tint="background.saveTint"
       :dock-saving="dockSaving"
       :dock-error="dockError"
       @position="background.setDockPosition"

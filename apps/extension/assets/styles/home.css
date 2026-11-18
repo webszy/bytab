@@ -113,6 +113,15 @@
   height: 36px;
 }
 
+.home-brand-tagline {
+  margin: 0;
+  color: #62666c;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
 .home-brand-divider {
   width: 1px;
   height: 14px;
@@ -120,7 +129,7 @@
   background: rgb(31 35 41 / 22%);
 }
 
-.home-bookmark-count {
+.home-bookmark-status {
   min-width: 0;
   margin: 0;
   overflow: hidden;

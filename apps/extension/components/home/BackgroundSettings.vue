@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { dockPositions, type DockPosition } from '../../utils/appearance';
+import { dockPositions, type DockPosition, type GlassMode } from '../../utils/appearance';
 import defaultWallpaper from '../../assets/wallpapers/default.png';
 import HomeDialog from './HomeDialog.vue';
 
 defineProps<{
+  glassTints: Record<GlassMode, number>;
+  tintError: string;
   dockPosition: DockPosition;
   dockSaving: boolean;
   dockError: string;
@@ -15,12 +17,16 @@ defineProps<{
 }>();
 const emit = defineEmits<{
   close: [];
+  previewTint: [mode: GlassMode, value: number];
+  saveTint: [mode: GlassMode, value: number];
   position: [position: DockPosition];
   file: [file: File];
   default: [];
   apply: [];
   restore: [];
 }>();
+
+const tintModes = ['light', 'dark'] as const;
 
 function onFile(event: Event) {
   const input = event.target as HTMLInputElement;
@@ -44,6 +50,18 @@ function onFile(event: Event) {
       </div>
       <p v-if="dockError" class="dialog-feedback" role="alert">{{ dockError }}</p>
     </fieldset>
+    <fieldset class="dock-position-setting glass-tint-setting" :disabled="loading">
+      <legend>Glass tint</legend>
+      <label v-for="mode in tintModes" :key="mode">
+        <span>{{ mode === 'light' ? 'Light mode' : 'Dark mode' }}</span>
+        <input type="range" min="0" max="1.5" step="0.05" :value="glassTints[mode]"
+          :aria-valuetext="Math.round(glassTints[mode] * 100) + '%'"
+          @input="emit('previewTint', mode, ($event.target as HTMLInputElement).valueAsNumber)"
+          @change="emit('saveTint', mode, ($event.target as HTMLInputElement).valueAsNumber)" />
+        <span class="tint-value" aria-hidden="true">{{ Math.round(glassTints[mode] * 100) }}%</span>
+      </label>
+      <p v-if="tintError" class="dialog-feedback" role="alert">{{ tintError }}</p>
+    </fieldset>
     <h3 class="appearance-background-title">Background</h3>
     <img class="background-preview" :src="previewUrl || defaultWallpaper" alt="Background preview" />
     <div class="background-options">
@@ -61,3 +79,9 @@ function onFile(event: Event) {
     </footer>
   </HomeDialog>
 </template>
+
+<style scoped>
+.glass-tint-setting label { display: grid; grid-template-columns: auto minmax(0, 1fr) 4ch; align-items: center; gap: 12px; margin-top: 8px; font-size: 12px; }
+.glass-tint-setting input { width: 100%; accent-color: #0071e3; }
+.glass-tint-setting .tint-value { text-align: right; font-variant-numeric: tabular-nums; }
+</style>

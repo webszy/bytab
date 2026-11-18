@@ -1,0 +1,244 @@
+@property --bytab-glass-tint {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: white;
+}
+
+@property --bytab-glass-ink {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgb(0 0 0 / 86%);
+}
+
+@property --bytab-glass-alpha {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0.22;
+}
+
+@property --bytab-glass-saturation {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1.8;
+}
+
+@property --bytab-glass-brightness {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1.06;
+}
+
+.extension-home {
+  --glass-tint-strength: var(--glass-light-tint, 1);
+}
+
+.extension-home :is(.extension-prompt, .home-shortcuts, .bookmark-dock, .model-menu, .prompt-bookmarks) {
+  --glass-base-tint: white;
+  --glass-thin: 0.06;
+  --glass-dense: 0.22;
+  --glass-density: 1;
+  --glass-contrast-floor: 0.5;
+  --glass-saturation-kept: 1;
+  --glass-base-saturation: 1.8;
+  --glass-base-brightness: 1.06;
+  --glass-hover: 0;
+  --glass-hover-alpha: 0.14;
+  --glass-hover-white: 0%;
+  --glass-highlight: rgb(255 255 255 / 30%);
+  --glass-edge:
+    inset 1.5px 1.5px 1px -1px rgb(255 255 255 / 95%),
+    inset -1.5px -1.5px 1px -1px rgb(255 255 255 / 55%),
+    inset 0 0 0 0.5px rgb(255 255 255 / 30%),
+    inset 5px 5px 10px -8px rgb(255 255 255 / 55%),
+    inset -4px -4px 10px -8px rgb(0 0 0 / 24%),
+    0 0 0 0.5px rgb(0 0 0 / 6%),
+    0 6px 24px rgb(0 0 0 / 8%);
+  --glass-blend: multiply;
+  --glass-secondary-ink: rgb(60 60 67);
+  --glass-secondary-opacity: 0.7;
+  --glass-control-fill: rgb(255 255 255 / 24%);
+  --glass-row-hover: rgb(255 255 255 / 42%);
+  --glass-row-selected: rgb(255 255 255 / 76%);
+  --glass-row-edge: rgb(255 255 255 / 72%);
+  --bytab-glass-lens: initial;
+  --bytab-glass-ink: rgb(0 0 0 / 86%);
+  --bytab-glass-tint: color-mix(in srgb, var(--glass-base-tint), white calc(var(--glass-hover) * var(--glass-hover-white)));
+  --glass-tint-alpha: calc(var(--glass-thin) + (var(--glass-dense) - var(--glass-thin)) * var(--glass-density));
+  --bytab-glass-alpha: min(1, calc(max(var(--glass-tint-alpha), var(--glass-contrast-floor)) * var(--glass-tint-strength) * (1 + var(--glass-hover) * var(--glass-hover-alpha))));
+  --bytab-glass-saturation: calc(1 + (var(--glass-base-saturation) * var(--glass-saturation-kept) - 1) * min(1, var(--glass-tint-strength)));
+  --bytab-glass-brightness: calc(1 + (var(--glass-base-brightness) - 1) * min(1, var(--glass-tint-strength)));
+  --glass-filter: blur(2px) saturate(var(--bytab-glass-saturation)) brightness(var(--bytab-glass-brightness));
+  transition: --bytab-glass-tint 200ms, --bytab-glass-alpha 200ms, --bytab-glass-saturation 200ms,
+    --bytab-glass-brightness 200ms, --bytab-glass-ink 200ms, border-color 200ms, box-shadow 200ms;
+}
+
+.extension-home [data-glass-ink='light'] {
+  --glass-base-tint: rgb(16 18 22);
+  --glass-thin: 0.1;
+  --glass-dense: 0.3;
+  --glass-contrast-floor: 0.71;
+  --glass-base-saturation: 1.7;
+  --glass-base-brightness: 0.85;
+  --glass-highlight: rgb(255 255 255 / 8%);
+  --glass-edge:
+    inset 1.5px 1.5px 1px -1px rgb(255 255 255 / 24%),
+    inset -1.5px -1.5px 1px -1px rgb(255 255 255 / 12%),
+    inset 4px 4px 10px -8px rgb(255 255 255 / 18%),
+    inset -4px -4px 10px -8px rgb(0 0 0 / 28%),
+    0 0 0 0.5px rgb(0 0 0 / 35%),
+    0 6px 24px rgb(0 0 0 / 17%);
+  --glass-hover-alpha: 0;
+  --glass-hover-white: 2%;
+  --glass-blend: plus-lighter;
+  --glass-secondary-ink: rgb(235 235 245);
+  --glass-secondary-opacity: 0.64;
+  --glass-control-fill: rgb(255 255 255 / 8%);
+  --glass-row-hover: rgb(255 255 255 / 8%);
+  --glass-row-selected: rgb(255 255 255 / 14%);
+  --glass-row-edge: rgb(255 255 255 / 26%);
+  --bytab-glass-ink: rgb(255 255 255 / 94%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .extension-home { --glass-tint-strength: var(--glass-dark-tint, 1); }
+
+  .extension-home :is(.extension-prompt, .home-shortcuts, .bookmark-dock, .model-menu, .prompt-bookmarks, [data-glass-ink='light']) {
+    --glass-base-tint: rgb(20 20 24);
+    --glass-thin: 0.16;
+    --glass-dense: 0.38;
+    --glass-contrast-floor: 0.71;
+    --glass-base-saturation: 1.6;
+    --glass-base-brightness: 0.8;
+    --glass-hover-alpha: 0;
+    --glass-hover-white: 2%;
+    --glass-highlight: rgb(255 255 255 / 10%);
+    --glass-edge:
+      inset 1.5px 1.5px 1px -1px rgb(255 255 255 / 32%),
+      inset -1.5px -1.5px 1px -1px rgb(255 255 255 / 18%),
+      inset 0 0 0 0.5px rgb(255 255 255 / 10%),
+      inset 5px 5px 10px -8px rgb(255 255 255 / 18%),
+      inset -4px -4px 10px -8px rgb(0 0 0 / 30%),
+      0 0 0 0.5px rgb(0 0 0 / 45%),
+      0 6px 24px rgb(0 0 0 / 24%);
+    --glass-blend: plus-lighter;
+    --glass-secondary-ink: rgb(235 235 245);
+    --glass-secondary-opacity: 0.64;
+    --glass-control-fill: rgb(255 255 255 / 8%);
+    --glass-row-hover: rgb(255 255 255 / 8%);
+    --glass-row-selected: rgb(255 255 255 / 14%);
+    --glass-row-edge: rgb(255 255 255 / 26%);
+    --bytab-glass-ink: rgb(255 255 255 / 94%);
+  }
+}
+
+.extension-home .extension-prompt .model-menu {
+  --glass-thin: 0.92;
+  --glass-dense: 0.97;
+  --bytab-glass-tint: color-mix(in srgb, var(--glass-base-tint) 84%, #292d35);
+  --glass-filter: blur(18px) saturate(var(--bytab-glass-saturation));
+  --glass-hover-alpha: 0.02;
+}
+
+.extension-home :is(.extension-prompt, .home-shortcuts, .bookmark-dock, .model-menu, .prompt-bookmarks):hover {
+  --glass-hover: 1;
+}
+
+/* Filter only the material. The prompt menu must overflow the pill and the
+   existing Dock, bookmark popup and detached shortcuts keep their own layers. */
+.extension-home :is(.extension-prompt, .home-shortcuts) {
+  isolation: isolate;
+  border-color: transparent;
+  background: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.extension-home :is(.extension-prompt, .home-shortcuts)::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.extension-home :is(.extension-prompt, .home-shortcuts)::before,
+.extension-home .bookmark-dock > .dock-surface,
+.extension-home .extension-prompt :is(.model-menu, .prompt-bookmarks) {
+  border-color: transparent;
+  background: var(--glass-base-tint);
+  box-shadow: var(--glass-edge);
+}
+@supports (backdrop-filter: blur(2px)) {
+  .extension-home :is(.extension-prompt, .home-shortcuts)::before,
+  .extension-home .bookmark-dock > .dock-surface,
+  .extension-home .extension-prompt :is(.model-menu, .prompt-bookmarks) {
+    background: radial-gradient(ellipse at top left,
+      color-mix(in srgb, var(--glass-highlight) calc(min(1, var(--glass-tint-strength)) * 100%), transparent),
+      transparent 55%),
+      color-mix(in srgb, var(--bytab-glass-tint) calc(var(--bytab-glass-alpha) * 100%), transparent);
+    backdrop-filter: var(--glass-filter) var(--bytab-glass-lens, );
+  }
+}
+
+.extension-home :is(.prompt-input, .model-label, .provider-name, .model-check, .provider-group-label,
+  .prompt-bookmark-copy, .prompt-bookmark-copy small, .dock-root-title, .dock-root-subtitle,
+  .dock-folder .dock-folder-label, .dock-folder--more > span:last-child, .dock-filter,
+  .dock-view-switch button, .shortcuts-header h2, .shortcuts-alignment, .shortcut-bar-handle),
+.extension-home .home-shortcuts .shortcut-label,
+.extension-home .prompt-input::placeholder {
+  color: var(--bytab-glass-ink);
+}
+.extension-home :is(.model-label, .provider-name, .provider-group-label, .prompt-bookmark-copy,
+  .dock-folder-label, .dock-root-subtitle, .shortcut-bar-title),
+.extension-home .home-shortcuts .shortcut-label {
+  mix-blend-mode: var(--glass-blend);
+}
+.extension-home .home-shortcuts .shortcut-label { filter: none; }
+.extension-home :is(.prompt-symbol, .model-chevron, .dock-filter .home-icon, .shortcuts-header h2 .home-icon) {
+  color: var(--glass-secondary-ink);
+  opacity: var(--glass-secondary-opacity);
+  mix-blend-mode: var(--glass-blend);
+}
+.extension-home :is(.model-trigger, .dock-filter, .dock-view-switch, .shortcuts-alignment) {
+  border-color: var(--glass-row-edge);
+  background: var(--glass-control-fill);
+}
+.extension-home :is(.model-trigger:hover, .model-trigger[aria-expanded='true'], .model-option:hover,
+  .prompt-bookmark:hover, .dock-folder:hover, .dock-filter:hover, .shortcuts-alignment:enabled:hover) {
+  background: var(--glass-row-hover);
+  box-shadow: inset 0 0 0 1px var(--glass-row-edge);
+}
+.extension-home :is(.model-option[aria-selected='true'], .prompt-bookmark[aria-selected='true'],
+  .dock-folder[aria-expanded='true'], .dock-view-switch button.is-selected, .shortcuts-alignment[aria-pressed='true']) {
+  color: var(--bytab-glass-ink);
+  background: var(--glass-row-selected);
+  box-shadow: inset 0 0 0 1px var(--glass-row-edge);
+}
+
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .extension-home :is(.extension-prompt, .home-shortcuts, .bookmark-dock, .model-menu, .prompt-bookmarks) {
+    --glass-blend: normal;
+  }
+  .extension-home :is(.extension-prompt, .home-shortcuts)::before,
+  .extension-home .bookmark-dock > .dock-surface,
+  .extension-home .extension-prompt :is(.model-menu, .prompt-bookmarks) {
+    background: var(--glass-base-tint);
+    backdrop-filter: none;
+  }
+}
+@media (forced-colors: active) {
+  .extension-home :is(.extension-prompt, .home-shortcuts, .bookmark-dock, .model-menu, .prompt-bookmarks) {
+    --glass-base-tint: Canvas;
+    --bytab-glass-ink: CanvasText;
+    --glass-secondary-ink: CanvasText;
+    --glass-secondary-opacity: 1;
+    --glass-row-edge: Highlight;
+  }
+  .extension-home :is(.extension-prompt, .home-shortcuts)::before,
+  .extension-home .bookmark-dock > .dock-surface,
+  .extension-home .extension-prompt :is(.model-menu, .prompt-bookmarks) {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+  .extension-home :is(.model-option, .prompt-bookmark)[aria-selected='true'],
+  .extension-home .dock-view-switch button.is-selected { outline: 1px solid Highlight; }
+}

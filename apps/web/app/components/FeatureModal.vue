@@ -81,8 +81,7 @@ onMounted(() => {
             <NuxtLink to="/" replace class="feature-dismiss">Close <kbd>esc</kbd></NuxtLink>
             <p id="feature-window-summary" class="sr-only">{{ feature?.description }}</p>
           </header>
-          <!-- Keep the routed slot mounted even on / so page SEO always runs.
-               Feature pages output only the empty whiteboard in phase 1. -->
+          <!-- Keep the routed slot mounted even on / so page SEO always runs. -->
           <div class="feature-body"><slot /></div>
         </div>
       </div>
