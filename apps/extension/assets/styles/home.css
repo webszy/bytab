@@ -618,16 +618,31 @@ a.shortcut-item--chatgpt:hover .shortcut-tile { transform: scale(1.05); box-shad
 .dock-item { transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1); }
 
 .dock-root {
+  --bookmark-edge: #c7b5f5;
+  --bookmark-accent: #9773d4;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 6px 14px;
-  border: 1px solid rgb(0 113 227 / 25%);
+  border: 1px solid color-mix(in srgb, var(--bookmark-edge) 45%, transparent);
   border-radius: 16px;
-  background: rgb(0 113 227 / 10%);
+  background: rgb(232 224 255 / 8%);
   box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
   text-align: left;
 }
+
+.dock-root:hover {
+  border-color: var(--bookmark-edge);
+  background-color: rgb(232 224 255 / 16%);
+}
+
+.dock-root:active,
+.dock-root[aria-expanded='true'] {
+  border-color: color-mix(in srgb, var(--bookmark-edge) 85%, transparent);
+  background-color: rgb(211 192 247 / 10%);
+}
+
+.home-page .dock-root:focus-visible { outline-color: var(--bookmark-accent); }
 
 .dock-root-icon {
   display: grid;
@@ -637,14 +652,14 @@ a.shortcut-item--chatgpt:hover .shortcut-tile { transform: scale(1.05); box-shad
   place-items: center;
   border-radius: 12px;
   color: white;
-  background: linear-gradient(to top right, #0071e3, #3b9eff);
-  box-shadow: 0 1px 2px rgb(0 113 227 / 35%);
+  background: linear-gradient(145deg, #d9ccfa, #bda7ef);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--bookmark-accent) 35%, transparent);
 }
 
 .dock-root-icon .home-icon { width: 16px; height: 16px; }
 .dock-root-copy { display: flex; flex-direction: column; padding-right: 4px; }
 .dock-root-title { display: flex; align-items: center; font-size: 13px; font-weight: 600; line-height: 1.25; white-space: nowrap; }
-.dock-count { margin-left: 8px; padding: 0 6px; border-radius: 9999px; color: white; background: #0071e3; font-size: 10px; font-weight: 700; }
+.dock-count { margin-left: 8px; padding: 0 6px; border-radius: 9999px; color: white; background: var(--bookmark-accent); font-size: 10px; font-weight: 700; }
 .dock-root-subtitle { margin-top: 4px; color: rgb(29 29 31 / 60%); font-size: 11px; font-weight: 500; line-height: 1; }
 .dock-divider { width: 1px; height: 36px; flex: none; margin: 0 16px; background: rgb(0 0 0 / 10%); }
 
