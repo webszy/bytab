@@ -21,45 +21,74 @@ export const siteFeatures = [
     id: 'bookmarks', label: 'Bookmarks', icon: 'bookmark',
     path: '/features/chrome-bookmarks',
     title: 'Native Chrome Bookmarks',
-    description: 'Your existing Chrome bookmarks, beautifully at home in your new tab.',
-    seoTitle: 'Native Chrome Bookmarks — bytab',
-    seoDescription: 'Give your existing Chrome bookmarks a beautiful new home with bytab. Access them directly in your new tab, with local processing and no bookmark uploads.',
+    description: 'Everything you\'ve saved. One beautiful place.',
+    seoTitle: 'Your Bookmarks, Reimagined — bytab',
+    seoDescription: 'See your existing Chrome bookmarks in one local new tab. Search saved pages without uploading bookmarks to bytab servers.',
   },
   {
     id: 'dock', label: 'Dock', icon: 'dock',
     path: '/features/bookmark-dock',
     title: 'Bookmark Dock',
-    description: 'Keep your bookmarks and favorite websites within easy reach.',
-    seoTitle: 'Bookmark Dock for Your Chrome New Tab — bytab',
-    seoDescription: 'Keep your favorite websites close with the bytab Bookmark Dock. A beautiful, familiar way to access Chrome bookmarks from your new tab.',
+    description: 'A simpler way to move through your day.',
+    seoTitle: 'Everything Within Reach — bytab',
+    seoDescription: 'A calmer dock for the places you use. Keep important destinations close in a clean Chrome new tab.',
   },
   {
     id: 'search', label: 'Search', icon: 'search',
     path: '/features/search-launcher',
     title: 'Search & Quick Launch',
-    description: 'A central place to find your bookmarks and reach your favorite websites.',
-    seoTitle: 'Search & Quick Launch for Chrome — bytab',
-    seoDescription: 'Explore bytab Search & Quick Launch: a central place for finding your Chrome bookmarks and reaching favorite websites in your personal new tab.',
+    description: 'One starting point. More possibilities.',
+    seoTitle: 'Search. Ask. Go. — bytab',
+    seoDescription: 'Search saved bookmarks, open Google or Bing, or take a prompt to the AI destination you choose. bytab does not run the model.',
   },
   {
     id: 'appearance', label: 'Appearance', icon: 'settings',
     path: '/features/customize-new-tab',
     title: 'Personalize Your New Tab',
-    description: 'Make your bookmark-centered personal space feel like your own.',
-    seoTitle: 'Customize Your Chrome New Tab — bytab',
-    seoDescription: 'Make your Chrome new tab feel like home with bytab. Discover a beautiful, personal space centered on your bookmarks and favorite websites.',
+    description: 'Your browser. Your space.',
+    seoTitle: 'Make It Yours — bytab',
+    seoDescription: 'A personal Chrome new tab with light, dark, or system appearance, the default background or your own image, and a dock on any edge.',
   },
   {
     id: 'privacy', label: 'Privacy', icon: 'shield',
-    path: '/privacy',
+    path: '/features/privacy',
     title: 'Local-first Privacy',
-    description: 'bytab displays your existing Chrome bookmarks locally and never uploads them to its own servers. Chrome bookmark sync follows your Chrome settings.',
-    seoTitle: 'Local-first Privacy · No Bookmark Uploads — bytab',
-    seoDescription: 'bytab processes and displays your existing Chrome bookmarks locally, without uploading them to bytab servers. Chrome bookmark sync follows your Chrome settings.',
+    description: 'Your bookmarks belong to you.',
+    seoTitle: 'Private by Design — bytab',
+    seoDescription: 'Chrome bookmarks stay in your browser and are not uploaded to bytab. Prompts you submit go to the third-party service you choose.',
   },
 ] as const satisfies readonly SiteFeature[];
 
-export const sitePaths = ['/', ...siteFeatures.map(feature => feature.path)];
+export interface LegalDocument {
+  id: string;
+  path: string;
+  title: string;
+  seoTitle: string;
+  seoDescription: string;
+}
+
+export const legalDocuments = [
+  {
+    id: 'privacy-policy',
+    path: '/privacy',
+    title: 'Privacy Policy',
+    seoTitle: 'Privacy Policy — bytab',
+    seoDescription: 'How bytab version 0.0.1 handles Chrome bookmarks, local settings, prompts, Gemini site access, and bytab.dev technical logs.',
+  },
+  {
+    id: 'terms',
+    path: '/terms',
+    title: 'Terms of Use',
+    seoTitle: 'Terms of Use — bytab',
+    seoDescription: 'Terms for the free bytab Chrome extension and bytab.dev, including third-party AI and search destinations. Version 0.0.1 does not charge a fee.',
+  },
+] as const satisfies readonly LegalDocument[];
+
+export const sitePaths = [
+  '/',
+  ...siteFeatures.map(feature => feature.path),
+  ...legalDocuments.map(document => document.path),
+];
 
 export function findSiteFeature(path: string): SiteFeature | undefined {
   return siteFeatures.find(feature => feature.path === path.replace(/\/$/, ''));

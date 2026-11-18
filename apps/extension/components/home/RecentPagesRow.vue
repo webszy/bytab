@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import type { LastOpened } from '../../utils/navigation';
 import { websiteLabel } from '../../utils/urls';
 import RecentPageCard from './RecentPageCard.vue';
 
-defineProps<{
-  opened: LastOpened | null;
-  openedLoading: boolean;
-  openedError: string;
-  closedTitle: string;
-  closedSubtitle: string;
-  hasClosedTab: boolean;
-  closedLoading: boolean;
-  restoring: boolean;
-  closedError: string;
-}>();
+withDefaults(defineProps<{
+  opened?: { title: string; url: string } | null;
+  openedLoading?: boolean;
+  openedError?: string;
+  closedTitle?: string;
+  closedSubtitle?: string;
+  hasClosedTab?: boolean;
+  closedLoading?: boolean;
+  restoring?: boolean;
+  closedError?: string;
+  emptyHint?: string;
+}>(), { closedTitle: '', closedSubtitle: '' });
 defineEmits<{ reopen: []; restore: [] }>();
 </script>
 
@@ -24,7 +24,7 @@ defineEmits<{ reopen: []; restore: [] }>();
       icon="arrowUpRight"
       mark="arrowUpRight"
       :primary="openedLoading ? 'Loading…' : openedError ? 'Last opened unavailable' : opened?.title || 'No recently opened page'"
-      :secondary="openedError || (opened ? websiteLabel(opened.url) : 'Open a website through bytab')"
+      :secondary="openedError || (opened ? websiteLabel(opened.url) : emptyHint || 'Open a website through bytab')"
       :disabled="openedLoading || !opened"
       @activate="$emit('reopen')"
     />
@@ -33,7 +33,7 @@ defineEmits<{ reopen: []; restore: [] }>();
       icon="history"
       mark="history"
       :primary="restoring ? 'Restoring…' : closedLoading ? 'Loading…' : hasClosedTab ? closedTitle : closedError ? 'Recently closed unavailable' : 'No recently closed tabs'"
-      :secondary="closedError || closedSubtitle"
+      :secondary="closedError || closedSubtitle || emptyHint || ''"
       :disabled="closedLoading || (!hasClosedTab && !closedError)"
       :busy="restoring"
       @activate="$emit('restore')"

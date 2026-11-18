@@ -99,36 +99,37 @@
   --bytab-glass-ink: rgb(255 255 255 / 94%);
 }
 
-@media (prefers-color-scheme: dark) {
-  .extension-home { --glass-tint-strength: var(--glass-dark-tint, 1); }
+.extension-home[data-theme='dark'] {
+  color-scheme: dark;
+  --glass-tint-strength: var(--glass-dark-tint, 1);
+}
 
-  .extension-home :is(.extension-prompt, .home-shortcuts, .bookmark-dock, .model-menu, .prompt-bookmarks, [data-glass-ink='light']) {
-    --glass-base-tint: rgb(20 20 24);
-    --glass-thin: 0.16;
-    --glass-dense: 0.38;
-    --glass-contrast-floor: 0.71;
-    --glass-base-saturation: 1.6;
-    --glass-base-brightness: 0.8;
-    --glass-hover-alpha: 0;
-    --glass-hover-white: 2%;
-    --glass-highlight: rgb(255 255 255 / 10%);
-    --glass-edge:
-      inset 1.5px 1.5px 1px -1px rgb(255 255 255 / 32%),
-      inset -1.5px -1.5px 1px -1px rgb(255 255 255 / 18%),
-      inset 0 0 0 0.5px rgb(255 255 255 / 10%),
-      inset 5px 5px 10px -8px rgb(255 255 255 / 18%),
-      inset -4px -4px 10px -8px rgb(0 0 0 / 30%),
-      0 0 0 0.5px rgb(0 0 0 / 45%),
-      0 6px 24px rgb(0 0 0 / 24%);
-    --glass-blend: plus-lighter;
-    --glass-secondary-ink: rgb(235 235 245);
-    --glass-secondary-opacity: 0.64;
-    --glass-control-fill: rgb(255 255 255 / 8%);
-    --glass-row-hover: rgb(255 255 255 / 8%);
-    --glass-row-selected: rgb(255 255 255 / 14%);
-    --glass-row-edge: rgb(255 255 255 / 26%);
-    --bytab-glass-ink: rgb(255 255 255 / 94%);
-  }
+.extension-home:where([data-theme='dark']) :is(.extension-prompt, .home-shortcuts, .bookmark-dock, .model-menu, .prompt-bookmarks, [data-glass-ink='light']) {
+  --glass-base-tint: rgb(20 20 24);
+  --glass-thin: 0.16;
+  --glass-dense: 0.38;
+  --glass-contrast-floor: 0.71;
+  --glass-base-saturation: 1.6;
+  --glass-base-brightness: 0.8;
+  --glass-hover-alpha: 0;
+  --glass-hover-white: 2%;
+  --glass-highlight: rgb(255 255 255 / 10%);
+  --glass-edge:
+    inset 1.5px 1.5px 1px -1px rgb(255 255 255 / 32%),
+    inset -1.5px -1.5px 1px -1px rgb(255 255 255 / 18%),
+    inset 0 0 0 0.5px rgb(255 255 255 / 10%),
+    inset 5px 5px 10px -8px rgb(255 255 255 / 18%),
+    inset -4px -4px 10px -8px rgb(0 0 0 / 30%),
+    0 0 0 0.5px rgb(0 0 0 / 45%),
+    0 6px 24px rgb(0 0 0 / 24%);
+  --glass-blend: plus-lighter;
+  --glass-secondary-ink: rgb(235 235 245);
+  --glass-secondary-opacity: 0.64;
+  --glass-control-fill: rgb(255 255 255 / 8%);
+  --glass-row-hover: rgb(255 255 255 / 8%);
+  --glass-row-selected: rgb(255 255 255 / 14%);
+  --glass-row-edge: rgb(255 255 255 / 26%);
+  --bytab-glass-ink: rgb(255 255 255 / 94%);
 }
 
 .extension-home .extension-prompt .model-menu {

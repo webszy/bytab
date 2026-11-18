@@ -3,16 +3,18 @@ import type { PromptProvider } from '../../utils/promptProviders';
 import chatgpt from '../../assets/providers/chatgpt.svg';
 import claude from '../../assets/providers/claude.svg';
 import grok from '../../assets/providers/grok.svg';
-import gemini from '../../assets/providers/gemini.png';
-import google from '../../assets/providers/google.png';
-import bing from '../../assets/providers/bing.png';
+import gemini from '../../assets/providers/gemini.svg';
+import bing from '../../assets/providers/bing.svg';
+import HomeIcon from './HomeIcon.vue';
+
 defineProps<{ icon: PromptProvider['icon'] }>();
-const logos = { chatgpt, claude, grok, gemini, google, bing };
+const logos = { chatgpt, claude, grok, gemini, bing };
 </script>
 
 <template>
   <span class="model-avatar" :class="`model-avatar--${icon}`">
-    <img :src="logos[icon]" alt="" aria-hidden="true" draggable="false" />
+    <HomeIcon v-if="icon === 'google'" name="google" class="provider-logo" />
+    <img v-else class="provider-logo" :src="logos[icon]" alt="" aria-hidden="true" draggable="false" />
   </span>
 </template>
 
@@ -22,5 +24,7 @@ const logos = { chatgpt, claude, grok, gemini, google, bing };
   background: transparent;
   border-radius: 0;
 }
-.model-avatar img { display: block; width: 18px; height: 18px; object-fit: contain; }
+.model-avatar .provider-logo { display: block; width: 18px; height: 18px; object-fit: contain; }
+
+.extension-home[data-theme='dark'] .provider-logo { filter: brightness(0) invert(1); }
 </style>

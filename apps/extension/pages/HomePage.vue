@@ -17,7 +17,6 @@ import { useLastClosed } from '@/composables/useLastClosed';
 import { useLastOpened } from '@/composables/useLastOpened';
 import { useShortcutBar } from '@/composables/useShortcutBar';
 import { useShortcuts } from '@/composables/useShortcuts';
-import { holidayLabel } from '@/utils/holidays';
 import { openWebsite } from '@/utils/navigation';
 import { isShortcutFolder, type ShortcutEntry } from '@/utils/shortcutCollections';
 import '@/assets/styles/home.css';
@@ -29,14 +28,13 @@ const homepage = ref<HTMLElement | null>(null);
 useExtensionGlass(homepage);
 const bookmarks = useBookmarks();
 const { catalog, bookmarkCount, loading: bookmarksLoading, error: bookmarksError } = bookmarks;
-const { now, time, date, locale } = useClock();
-const holiday = computed(() => holidayLabel(now.value, locale));
+const { time, date, holiday } = useClock();
 const { value: lastOpened, loading: openedLoading, error: openedError } = useLastOpened();
 const closed = useLastClosed();
 const { session: closedSession, title: closedTitle, hostname: closedHostname, loading: closedLoading, restoring, error: closedError } = closed;
 const background = useBackground();
 const { dockPosition, dockSaving, dockError, activeUrl, previewUrl, preparing, saving: backgroundSaving, loading: backgroundLoading, error: backgroundError, loadError: backgroundLoadError } = background;
-const { glassTints, tintError } = background;
+const { theme, effectiveTheme, themeError, glassTints, tintError } = background;
 const homepageStyle = computed(() => ({
   '--home-wallpaper': activeUrl.value ? `url('${activeUrl.value}')` : undefined,
   '--glass-light-tint': String(glassTints.value.light),
@@ -118,7 +116,7 @@ async function alignShortcut() {
 </script>
 
 <template>
-  <div ref="homepage" class="home-page extension-home" :data-dock-position="dockPosition" :style="homepageStyle">
+  <div ref="homepage" class="home-page extension-home" :data-theme="effectiveTheme" :data-dock-position="dockPosition" :style="homepageStyle">
     <div class="home-background" aria-hidden="true" />
     <HomeTopBar :bookmarks-unavailable="!!bookmarksError" @settings="openSettings" />
     <div id="home-shortcut-layer" class="shortcut-layout" />
@@ -170,6 +168,9 @@ async function alignShortcut() {
     />
     <BackgroundSettings
       v-if="settingsOpen"
+      :theme="theme"
+      :theme-error="themeError"
+      @theme="background.setTheme"
       :dock-position="dockPosition"
       :glass-tints="glassTints"
       :tint-error="tintError"

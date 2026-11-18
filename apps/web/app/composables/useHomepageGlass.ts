@@ -3,10 +3,9 @@ import { createGlassLens, supportsGlassLens } from '~/utils/glassLens';
 import { glassMaterial, loadGlassWallpaper, sampleGlassWallpaper, type GlassInk } from '~/utils/glassScene';
 
 const surfaces = [
-  { id: 'settings', selector: '.home-appearance', lens: false, rowHighlight: 0 },
-  { id: 'prompt', selector: '.home-prompt', lens: true, rowHighlight: 0.08 },
+  { id: 'prompt', selector: '.extension-prompt', lens: true, rowHighlight: 0.08 },
   { id: 'models', selector: '.model-menu', lens: false, rowHighlight: 0.14 },
-  { id: 'shortcuts', selector: '.home-shortcuts', lens: true, rowHighlight: 0 },
+  { id: 'shortcuts', selector: '.home-shortcuts', lens: true, rowHighlight: 0.14 },
   { id: 'dock', selector: '.site-dock', lens: false, rowHighlight: 0.14 },
 ] as const;
 const dialogDockInkId = 'dock:dialog';
@@ -33,6 +32,7 @@ export function useHomepageGlassTints() {
 
 export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
   const tints = useHomepageGlassTints();
+  const theme = ref<'light' | 'dark'>('light');
   let dispose: (() => void) | undefined;
 
   onMounted(() => {
@@ -77,6 +77,11 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
 
     function schedule() {
       if (!stopped && !frame) frame = requestAnimationFrame(update);
+    }
+
+    function updateTheme() {
+      theme.value = darkTheme.matches ? 'dark' : 'light';
+      schedule();
     }
 
     const update = () => {
@@ -173,12 +178,12 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
     sceneChanges.observe(homepage, wallpaperAttributes);
     sceneChanges.observe(background, wallpaperAttributes);
     if (featureLayer) sceneChanges.observe(featureLayer, { attributes: true, attributeFilter: ['role'] });
-    darkTheme.addEventListener('change', schedule);
+    darkTheme.addEventListener('change', updateTheme);
     solidGlass.addEventListener('change', schedule);
     window.addEventListener('resize', schedule);
     window.addEventListener('scroll', schedule, { capture: true, passive: true });
     void document.fonts.ready.then(schedule);
-    schedule();
+    updateTheme();
 
     dispose = () => {
       stopped = true;
@@ -186,7 +191,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
       resize.disconnect();
       contentChanges.disconnect();
       sceneChanges.disconnect();
-      darkTheme.removeEventListener('change', schedule);
+      darkTheme.removeEventListener('change', updateTheme);
       solidGlass.removeEventListener('change', schedule);
       window.removeEventListener('resize', schedule);
       window.removeEventListener('scroll', schedule, true);
@@ -195,8 +200,11 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
   });
 
   onBeforeUnmount(() => dispose?.());
-  return computed(() => ({
-    '--glass-light-tint': tints.value.light,
-    '--glass-dark-tint': tints.value.dark,
-  }));
+  return {
+    theme,
+    tints: computed(() => ({
+      '--glass-light-tint': tints.value.light,
+      '--glass-dark-tint': tints.value.dark,
+    })),
+  };
 }

@@ -17,7 +17,6 @@ export function useExtensionGlass(root: Ref<HTMLElement | null>) {
     const backdrop = page?.querySelector<HTMLElement>('.home-background');
     if (!page || !backdrop) return;
 
-    const dark = matchMedia('(prefers-color-scheme: dark)');
     const solid = matchMedia('(prefers-reduced-transparency: reduce), (forced-colors: active)');
     const supportsLens = supportsGlassLens();
     const lenses = new Map<HTMLElement, ReturnType<typeof createGlassLens>>();
@@ -54,6 +53,7 @@ export function useExtensionGlass(root: Ref<HTMLElement | null>) {
         });
       }
       const bounds = backdrop.getBoundingClientRect();
+      const dark = page.dataset.theme === 'dark';
       const present = new Set<HTMLElement>();
       for (const { selector, lens, highlight } of surfaces) {
         const element = page.querySelector<HTMLElement>(selector);
@@ -65,7 +65,7 @@ export function useExtensionGlass(root: Ref<HTMLElement | null>) {
         }
         const rect = element.getBoundingClientRect();
         const dragging = element.classList.contains('shortcut-bar--dragging');
-        const key = [revision, !!wallpaper, wallpaper === null, dark.matches, solid.matches, dragging,
+        const key = [revision, !!wallpaper, wallpaper === null, dark, solid.matches, dragging,
           bounds.x, bounds.y, bounds.width, bounds.height, rect.x, rect.y, rect.width, rect.height,
           element.style.position].join('/');
         if (lastScene.get(element) === key) continue;
@@ -74,10 +74,10 @@ export function useExtensionGlass(root: Ref<HTMLElement | null>) {
         const previous = inks.get(selector);
         // During a drag use CSS glass and sample again at the final location.
         const material = !dragging && wallpaper && rect.width && rect.height && bounds.width && bounds.height
-          ? glassMaterial(sampleGlassWallpaper(wallpaper, bounds, rect), dark.matches, previous, highlight) : null;
+          ? glassMaterial(sampleGlassWallpaper(wallpaper, bounds, rect), dark, previous, highlight) : null;
         const ink = material?.ink ?? (wallpaper === undefined || dragging ? previous : undefined);
-        element.dataset.glassInk = dark.matches || ink === 'light' ? 'light' : 'dark';
-        if (material && !dark.matches && previous !== material.ink) {
+        element.dataset.glassInk = dark || ink === 'light' ? 'light' : 'dark';
+        if (material && !dark && previous !== material.ink) {
           inks.set(selector, material.ink);
           try { localStorage.setItem('bytab.glassInk.' + selector, material.ink); } catch { /* Optional cache. */ }
         }
@@ -113,13 +113,12 @@ export function useExtensionGlass(root: Ref<HTMLElement | null>) {
     // Popovers mount inside the form. Only the page and the movable bar need
     // attribute observations; CSS-variable writes cannot change the scene key.
     const mutations = new MutationObserver(schedule);
-    mutations.observe(page, { attributes: true, attributeFilter: ['style', 'data-dock-position'] });
+    mutations.observe(page, { attributes: true, attributeFilter: ['style', 'data-dock-position', 'data-theme'] });
     const form = page.querySelector('.extension-prompt');
     if (form) mutations.observe(form, { childList: true, subtree: true });
     const shortcuts = page.querySelector('.home-shortcuts');
     if (shortcuts) mutations.observe(shortcuts, { attributes: true, attributeFilter: ['style', 'class'] });
     size.observe(backdrop);
-    dark.addEventListener('change', schedule);
     solid.addEventListener('change', schedule);
     window.addEventListener('resize', schedule);
     page.addEventListener('scroll', schedule, { capture: true, passive: true });
@@ -131,7 +130,6 @@ export function useExtensionGlass(root: Ref<HTMLElement | null>) {
       cancelAnimationFrame(frame);
       size.disconnect();
       mutations.disconnect();
-      dark.removeEventListener('change', schedule);
       solid.removeEventListener('change', schedule);
       window.removeEventListener('resize', schedule);
       page.removeEventListener('scroll', schedule, true);

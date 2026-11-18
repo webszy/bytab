@@ -29,6 +29,7 @@ const emit = defineEmits<{
 const allItems = computed(() => props.loading ? [] : props.shortcuts ?? defaultShortcuts);
 const activeFolderId = ref<string | null>(null);
 const activeFolder = computed(() => allItems.value.find(item => item.id === activeFolderId.value && isShortcutFolder(item)));
+const title = computed(() => activeFolder.value?.title ?? 'Frequent Shortcuts');
 const items = computed(() => allItems.value.filter(item => activeFolder.value
   ? !isShortcutFolder(item) && item.folderId === activeFolder.value.id
   : isShortcutFolder(item) || !item.folderId));
@@ -224,27 +225,29 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="barAnchor" :class="enabled ? 'shortcut-bar-anchor' : 'shortcut-bar-preview'" :style="enabled ? bar.anchorStyle.value : undefined">
+  <div ref="barAnchor" class="shortcut-bar-anchor" :style="enabled ? bar.anchorStyle.value : undefined">
   <section ref="barPanel" class="home-shortcuts" :class="{ 'shortcut-bar--enabled': enabled, 'shortcut-bar--dragging': bar.dragging.value }"
     :style="enabled ? bar.style.value : undefined" aria-labelledby="home-shortcuts-heading">
     <header class="shortcuts-header">
-      <h2 id="home-shortcuts-heading">
-        <button v-if="enabled" class="shortcut-bar-handle" type="button" aria-label="Move shortcuts bar" title="Drag to move · Arrow keys to adjust"
-          :disabled="barLayout?.pinned || barBusy || busy || loading" @pointerdown="bar.start" @keydown="bar.keydown"><HomeIcon name="dots" /></button>
-        <HomeIcon v-else name="dots" /><span class="shortcut-bar-title" :class="{ 'shortcut-bar-title--folder': activeFolder }">{{ activeFolder?.title ?? 'Frequent Shortcuts' }}</span>
+      <h2 id="home-shortcuts-heading" :aria-label="title">
+        <button class="shortcut-bar-handle" type="button" aria-label="Move shortcuts bar"
+          :title="enabled ? 'Drag to move · Arrow keys to adjust' : 'Available in the Chrome extension'"
+          :disabled="!enabled || barLayout?.pinned || barBusy || busy || loading" @pointerdown="bar.start" @keydown="bar.keydown"><HomeIcon name="dots" /></button>
+        <span class="shortcut-bar-title" :class="{ 'shortcut-bar-title--folder': activeFolder }">{{ title }}</span>
       </h2>
-      <div v-if="enabled" class="shortcut-bar-tools">
+      <div class="shortcut-bar-tools" :title="enabled ? undefined : 'Available in the Chrome extension'">
         <template v-if="activeFolder">
           <button class="shortcuts-alignment" type="button" aria-label="← Main bar" @click="activeFolderId = null">← Back</button>
-          <button class="shortcuts-alignment" type="button" aria-label="Edit folder" :disabled="busy" @click="emit('edit', activeFolder)">Edit</button>
+          <button class="shortcuts-alignment" type="button" aria-label="Edit folder" :disabled="!enabled || busy" @click="emit('edit', activeFolder)">Edit</button>
         </template>
-        <button v-else class="shortcuts-alignment shortcut-new-folder" type="button" :disabled="busy || loading" @click="emit('addFolder')">+ New folder</button>
-        <button class="shortcuts-alignment" type="button" :aria-pressed="barLayout?.pinned ?? false" :disabled="barBusy || loading"
+        <button v-else class="shortcuts-alignment shortcut-new-folder" type="button" :disabled="!enabled || busy || loading" @click="emit('addFolder')">+ New folder</button>
+        <button class="shortcuts-alignment" type="button" :aria-pressed="barLayout?.pinned ?? false" :disabled="!enabled || barBusy || loading"
           :aria-label="barLayout?.pinned ? 'Unpin shortcuts bar' : 'Pin shortcuts bar'"
           @click="emit('saveBar', { ...barLayout, pinned: !barLayout?.pinned })">{{ barLayout?.pinned ? 'Unpin' : 'Pin' }}</button>
-      <button v-if="enabled && !activeFolder" class="shortcuts-alignment" type="button" title="Restore aligned positions and default order" :disabled="busy || loading || barBusy" @click="emit('resetLayout')"><span aria-hidden="true" />Reset layout</button>
+        <button v-if="!activeFolder" class="shortcuts-alignment" type="button"
+          :title="enabled ? 'Restore aligned positions and default order' : 'Available in the Chrome extension'"
+          :disabled="!enabled || busy || loading || barBusy" @click="emit('resetLayout')"><span aria-hidden="true" />Reset layout</button>
       </div>
-      <span v-if="!enabled" class="shortcuts-alignment"><span aria-hidden="true" />Grid Aligned</span>
     </header>
 
     <nav ref="grid" class="shortcut-items" aria-label="Frequent shortcuts" :aria-busy="loading">
@@ -279,20 +282,19 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.shortcut-bar-preview { display: contents; }
 .shortcut-bar-anchor { width: min(100%, 680px); flex: none; }
-.shortcut-bar--enabled { width: 100%; }
+.home-shortcuts { width: 100%; }
 .shortcut-bar--dragging { cursor: grabbing; }
 .shortcut-bar-tools { display: flex; align-items: center; gap: 6px; }
 .shortcut-bar-handle { display: grid; place-items: center; padding: 6px; border: 0; border-radius: 6px; background: transparent; cursor: grab; touch-action: none; }
 .shortcut-bar-handle:disabled { cursor: default; opacity: .45; }
 .shortcut-bar-handle:active:not(:disabled) { cursor: grabbing; }
-.shortcut-bar--enabled .shortcuts-header { gap: 8px; flex-wrap: wrap; }
+.shortcuts-header { gap: 8px; flex-wrap: wrap; }
 .shortcut-bar-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
-.shortcut-bar--enabled .shortcuts-header h2 { min-width: 0; }
+.shortcuts-header h2 { min-width: 0; }
 .shortcut-new-folder { color: #0071e3; }
 @media (max-width: 480px) {
-  .shortcut-bar--enabled .shortcut-bar-title:not(.shortcut-bar-title--folder) { display: none; }
+  .shortcut-bar-title:not(.shortcut-bar-title--folder) { display: none; }
   .shortcut-bar-title--folder { max-width: 64px; }
 }
 .shortcut-folder-drop { border-radius: 16px; outline: 2px solid #0071e3; background: rgb(0 113 227 / 15%); }

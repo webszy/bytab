@@ -14,3 +14,12 @@ test('appearance supports legacy/default/invalid settings and preserves other fi
     { kind: 'default', theme: 'light', nested: { value: 42 }, dockPosition: 'right' });
   assert.equal(legacy.imageId, 'wallpaper');
 });
+
+test('appearance defaults to System and keeps explicit theme preferences', () => {
+  for (const theme of [undefined, null, 'auto', true]) {
+    assert.equal(parseAppearance({ theme }).theme, 'system');
+  }
+  for (const theme of ['light', 'dark', 'system']) {
+    assert.equal(parseAppearance({ kind: 'custom', imageId: 'wallpaper', theme }).theme, theme);
+  }
+});

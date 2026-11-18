@@ -9,6 +9,7 @@ export default defineNuxtConfig({
   alias: {
     '#extension-home': fileURLToPath(new URL('../extension/components/home', import.meta.url)),
     '#extension-assets': fileURLToPath(new URL('../extension/assets', import.meta.url)),
+    '#extension-composables': fileURLToPath(new URL('../extension/composables', import.meta.url)),
   },
   runtimeConfig: {
     public: {

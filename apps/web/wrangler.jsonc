@@ -1,0 +1,24 @@
+{
+  "name": "bytab-web",
+  "account_id": "d44223ee73c4210abdaf28c3a7dcffe6",
+  "main": ".output/server/index.mjs",
+  "compatibility_date": "2026-11-09",
+  "compatibility_flags": ["nodejs_compat"],
+  "build": {
+    "command": "pnpm run build --preset cloudflare_module"
+  },
+  "assets": {
+    "directory": ".output/public"
+  },
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "bytab.dev",
+      "custom_domain": true
+    }
+  ],
+  "keep_vars": true,
+  "vars": {
+    "NUXT_PUBLIC_SITE_URL": "https://bytab.dev"
+  }
+}

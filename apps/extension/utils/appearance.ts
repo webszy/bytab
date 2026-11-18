@@ -1,6 +1,10 @@
 export const dockPositions = ['bottom', 'top', 'left', 'right'] as const;
 export type DockPosition = typeof dockPositions[number];
-export type AppearanceSettings = Record<string, unknown> & { dockPosition: DockPosition } & (
+export const themePreferences = ['light', 'dark', 'system'] as const;
+export type ThemePreference = typeof themePreferences[number];
+export type GlassMode = Exclude<ThemePreference, 'system'>;
+
+export type AppearanceSettings = Record<string, unknown> & { dockPosition: DockPosition; theme: ThemePreference } & (
   { kind: 'default' } | { kind: 'custom'; imageId: string }
 );
 
@@ -9,14 +13,13 @@ export function parseAppearance(value: unknown): AppearanceSettings {
     ? value as Record<string, unknown> : {};
   const dockPosition = dockPositions.includes(source.dockPosition as DockPosition)
     ? source.dockPosition as DockPosition : 'bottom';
+  const theme = themePreferences.find(preference => preference === source.theme) ?? 'system';
   if (source.kind === 'custom' && typeof source.imageId === 'string' && source.imageId) {
-    return { ...source, kind: 'custom', imageId: source.imageId, dockPosition };
+    return { ...source, kind: 'custom', imageId: source.imageId, dockPosition, theme };
   }
   const { imageId: _unused, ...rest } = source;
-  return { ...rest, kind: 'default', dockPosition };
+  return { ...rest, kind: 'default', dockPosition, theme };
 }
-
-export type GlassMode = 'light' | 'dark';
 
 export function readGlassTints(settings: AppearanceSettings): Record<GlassMode, number> {
   const tints = settings.glassTints;

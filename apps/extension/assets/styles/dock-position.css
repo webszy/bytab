@@ -56,11 +56,8 @@
 .home-page[data-dock-position='left'] .home-topbar { padding-left: 96px; }
 .home-page[data-dock-position='right'] .home-topbar { padding-right: 96px; }
 .home-page:is([data-dock-position='left'], [data-dock-position='right']) .home-bottom-buffer { height: 80px; }
-.dock-position-setting { margin: 0 0 18px; padding: 0 0 18px; border: 0; border-bottom: 1px solid rgb(0 0 0 / 10%); }
-.dock-position-setting legend, .appearance-background-title { font-size: 14px; font-weight: 600; }
 .dock-position-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .dock-position-options .dialog-button { display: flex; align-items: center; flex-direction: column; gap: 8px; padding: 10px 4px; }
-.dock-position-options [aria-pressed='true'] { border-color: #0071e3; color: #0068d1; background: rgb(0 113 227 / 9%); }
 .dock-position-preview { position: relative; width: 32px; height: 24px; border: 1px solid currentColor; border-radius: 5px; }
 .dock-position-preview::after { position: absolute; content: ''; background: currentColor; border-radius: 2px; }
 .dock-position-preview[data-edge='bottom']::after { bottom: 2px; left: 3px; right: 3px; height: 4px; }

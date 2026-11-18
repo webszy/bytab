@@ -1,20 +1,22 @@
 import { computed, onBeforeUnmount, onMounted, shallowRef } from 'vue';
+import { holidayLabel } from '../utils/holidays';
 
 export function useClock() {
-  const now = shallowRef(new Date());
-  const locale = navigator.language;
-  const timeFormatter = new Intl.DateTimeFormat(locale, {
+  const now = shallowRef<Date | null>(null);
+  const locale = shallowRef('en-US');
+  const timeFormatter = computed(() => new Intl.DateTimeFormat(locale.value, {
     hour: '2-digit',
     minute: '2-digit',
     hourCycle: 'h23',
-  });
-  const dateFormatter = new Intl.DateTimeFormat(locale, {
+  }));
+  const dateFormatter = computed(() => new Intl.DateTimeFormat(locale.value, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-  });
-  const time = computed(() => timeFormatter.format(now.value));
-  const date = computed(() => dateFormatter.format(now.value));
+  }));
+  const time = computed(() => now.value ? timeFormatter.value.format(now.value) : '');
+  const date = computed(() => now.value ? dateFormatter.value.format(now.value) : '');
+  const holiday = computed(() => now.value ? holidayLabel(now.value, locale.value) : '');
   let timer: ReturnType<typeof setTimeout> | undefined;
 
   function refresh() {
@@ -26,6 +28,7 @@ export function useClock() {
   }
 
   onMounted(() => {
+    locale.value = navigator.language;
     refresh();
     document.addEventListener('visibilitychange', refresh);
     window.addEventListener('focus', refresh);
@@ -38,5 +41,5 @@ export function useClock() {
     window.removeEventListener('pageshow', refresh);
   });
 
-  return { now, time, date, locale };
+  return { time, date, holiday };
 }

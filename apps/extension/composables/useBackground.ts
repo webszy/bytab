@@ -1,12 +1,49 @@
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import { browser } from 'wxt/browser';
 import { deleteBackground, prepareBackground, readBackground, writeBackground } from '../utils/background-db';
 import { storageKeys, updateLocalValue, useLocalValue, withLocalLock } from '../utils/storage';
 
-import { parseAppearance, readGlassTints, type AppearanceSettings, type DockPosition, type GlassMode } from '../utils/appearance';
+import { parseAppearance, readGlassTints, type AppearanceSettings, type DockPosition, type GlassMode, type ThemePreference } from '../utils/appearance';
 
 export function useBackground() {
   const stored = useLocalValue<AppearanceSettings>(storageKeys.background, parseAppearance(null), parseAppearance);
+  const pendingTheme = ref<ThemePreference>();
+  const theme = computed(() => pendingTheme.value ?? stored.value.value.theme);
+  const themeError = ref('');
+  let themeRevision = 0;
+  const systemQuery = matchMedia('(prefers-color-scheme: dark)');
+  const systemDark = ref(systemQuery.matches);
+  const effectiveTheme = computed<GlassMode>(() => {
+    if (theme.value !== 'system') return theme.value;
+    return systemDark.value ? 'dark' : 'light';
+  });
+
+  function updateSystemTheme() {
+    systemDark.value = systemQuery.matches;
+  }
+
+  onMounted(() => {
+    systemQuery.addEventListener('change', updateSystemTheme);
+    updateSystemTheme();
+  });
+
+  async function setTheme(preference: ThemePreference) {
+    if (stored.loading.value || preference === theme.value) return;
+    const revision = ++themeRevision;
+    pendingTheme.value = preference;
+    themeError.value = '';
+    try {
+      const next = await updateLocalValue(storageKeys.background, parseAppearance, current => ({
+        ...current, theme: preference,
+      }));
+      if (revision === themeRevision) stored.value.value = next;
+    } catch {
+      if (revision === themeRevision) themeError.value = 'Could not save theme. Try again.';
+    } finally {
+      if (revision === themeRevision) pendingTheme.value = undefined;
+    }
+  }
+
   const tintPreview = ref<Partial<Record<GlassMode, number>>>({});
   const glassTints = computed(() => ({ ...readGlassTints(stored.value.value), ...tintPreview.value }));
   const tintError = ref('');
@@ -171,6 +208,7 @@ export function useBackground() {
   }
 
   onBeforeUnmount(() => {
+    systemQuery.removeEventListener('change', updateSystemTheme);
     disposed = true;
     loadRevision++;
     pickRevision++;
@@ -179,6 +217,7 @@ export function useBackground() {
   });
 
   return {
+    theme, effectiveTheme, themeError, setTheme,
     glassTints, tintError, previewTint, saveTint,
     dockPosition, dockSaving, dockError, setDockPosition,
     activeUrl, previewUrl, preparing, saving, error: computed(() => error.value || imageError.value),

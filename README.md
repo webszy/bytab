@@ -38,7 +38,8 @@ bytab/
 │       ├── .env.example
 │       ├── nuxt.config.ts
 │       ├── package.json
-│       └── tsconfig.json
+│       ├── tsconfig.json
+│       └── wrangler.jsonc
 ├── .gitignore
 ├── package.json
 ├── pnpm-lock.yaml
@@ -85,7 +86,7 @@ pnpm --filter ./apps/web typecheck
 
 ### 官网 Phase 1
 
-官网使用 Nuxt 4 原生文件路由和 SSR。`app/layouts/default.vue` 持续挂载首页 Shell、Prompt Bar、Dock 和公共窗口，`useRoute()` 决定弹窗、标题及 Dock Active 状态，没有第二套弹窗开关。关闭使用 `navigateTo('/', { replace: true })`；Escape、遮罩、红色控制点和 Close 均可关闭。窗口的键盘焦点范围包含 Dock，支持 Tab 循环及关闭后的焦点恢复。
+官网使用 Nuxt 4 原生文件路由和 SSR。`app/layouts/default.vue` 持续挂载首页 Shell、Prompt Bar 和 Dock，`useRoute()` 决定功能弹窗、标题及 Dock Active 状态。点击红色控制点、点击遮罩或按 Escape 均可关闭窗口。关闭功能窗口通过 `navigateTo('/', { replace: true })` 返回首页。功能窗口的键盘焦点范围包含 Dock，支持 Tab 循环及关闭后的焦点恢复。
 
 | 页面 | URL |
 | --- | --- |
@@ -96,16 +97,16 @@ pnpm --filter ./apps/web typecheck
 | Appearance | `/features/customize-new-tab` |
 | Privacy | `/privacy` |
 
-路由、图标、名称及 SEO 文案集中在 `apps/web/shared/site.ts`。未知功能 slug 返回 404。功能页面目前只输出白色 `.feature-whiteboard`，后续在这些 Vue 页面中增加语义化内容即可继续由服务端渲染。`FeatureModal` 提供公共外观，不需要复制首页。
+路由、图标、名称及 SEO 文案集中在 `apps/web/shared/site.ts`。未知功能 slug 返回 404。功能页内容由对应路由服务端渲染。功能页和首页介绍弹窗共用 `WindowDialog` 的标题栏、关闭交互和深浅色外观。
 
-官网直接复用扩展中不依赖 Chrome API 的 `PromptBar.vue`、`HomeIcon.vue`、本地字体和玻璃样式；背景直接引用 `apps/shared/wallpapers/default.png`，保留设计稿中的 cover 定位、白色叠层及渐变。官网不导入扩展页面或 Chrome API，不读取书签。Prompt 输入与模型选择只保存在当前页面内存中，提交按钮禁用，不发送请求。
+官网复用扩展的品牌栏、时钟、最近页面卡片、Prompt Bar、快捷栏、默认壁纸和玻璃样式。官网 Dock 使用同一套样式，链接到各功能路由。最近页面卡片、Prompt 提交和快捷栏编辑为预览，Chrome 书签与会话数据由扩展管理。
 
 在 `apps/web/.env` 中配置 `.env.example` 所列的可选项：
 
-- `NUXT_PUBLIC_SITE_URL`：确定后的生产站点 origin。未配置时，SSR canonical、OG URL、`/sitemap.xml` 和 `/robots.txt` 使用实际请求 origin；未填造生产域名。每个功能的 canonical 指向自己的路径。
+- `NUXT_PUBLIC_SITE_URL`：生产站点 origin。Cloudflare 生产环境由 `apps/web/wrangler.jsonc` 设为 `https://bytab.dev`。本地未配置时，SSR canonical、OG URL、`/sitemap.xml` 和 `/robots.txt` 使用实际请求 origin。每个功能的 canonical 指向自己的路径。
 - `NUXT_PUBLIC_CHROME_WEB_STORE_URL`：真实 Chrome Web Store 链接。为空时，Add to Chrome 按钮保留未接入状态。
 
-每页通过 `useSeoMeta` 输出独立 title、description、OG 和 Twitter Card；canonical 使用 `useHead` 输出。`/sitemap.xml` 包含首页及五个功能页面，无额外 SEO 依赖。部署使用默认 SSR 服务端构建，需将全部请求交给 Nuxt/Nitro，以支持功能页直接打开和刷新。
+每页通过 `useSeoMeta` 输出独立 title、description、OG 和 Twitter Card；canonical 使用 `useHead` 输出。`/sitemap.xml` 包含首页及五个功能页面。Cloudflare Workers 提供 Nuxt/Nitro SSR 和静态资源，在功能页直接打开和刷新时也能返回完整 HTML。
 
 启动官网后可运行 `pnpm --filter ./apps/web verify:ssr` 检查六个页面的 HTTP、服务端元数据、canonical、可抓取链接、空白弹窗、静态资源、404、sitemap 和 robots。可用 `BYTAB_TEST_BASE_URL` 指定其他本地预览端口。若服务端设置了 `NUXT_PUBLIC_SITE_URL`，检查命令也需使用相同值。项目目前未配置 lint 脚本。
 
@@ -133,9 +134,14 @@ pnpm --filter ./apps/web typecheck
 ## Deployment
 
 - Extension：未来通过 Chrome Web Store 分发，使用扩展自己的生产构建和 ZIP。
-- Web：未来计划部署到 Cloudflare Workers。部署配置届时放在 `apps/web`，当前保留 Nuxt 默认构建方式，不配置 Cloudflare 资源。
+- 官网部署到 Cloudflare Workers 的 `bytab-web`，生产域名为 `bytab.dev`。`apps/web/wrangler.jsonc` 声明域名、静态资源目录和 Nitro 的 Cloudflare 构建命令。
 
-两个应用独立发布。本轮不部署官网，也不发布扩展；生产域名和商店链接通过运行时配置接入。
+使用 Wrangler 4.125.0 登录 Cloudflare 后，从仓库根目录运行：
+
+```sh
+wrangler deploy --cwd apps/web --config wrangler.jsonc
+BYTAB_TEST_BASE_URL=https://bytab.dev NUXT_PUBLIC_SITE_URL=https://bytab.dev pnpm --filter ./apps/web verify:ssr
+```
 
 ## Reuse for Another Product
 

@@ -1,6 +1,6 @@
 # Provider logos
 
-Official first-party assets retrieved 2026-11-17 and bundled locally. No runtime network requests. These trademarks belong to their respective owners.
+Official first-party assets retrieved 2026-11-17 and stored locally. The provider selector uses local SVGs. These trademarks belong to their respective owners.
 
 | Asset | Official source | Original asset |
 | --- | --- | --- |
@@ -11,7 +11,9 @@ Official first-party assets retrieved 2026-11-17 and bundled locally. No runtime
 | google.png | https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png | Unchanged |
 | bing.png | https://www.bing.com/sa/simg/favicon-trans-bg-blue-mg-png.png | Official homepage favicon, unchanged |
 
-SHA-256 of bundled files:
+The selector reuses the Google mark from `home-icons.ts`. The Bing SVG redraws the magnifier from `bing.png`. The Gemini SVG pairs Google's sparkle outline with gradients based on `gemini.png`. [Gemini SVG source](https://www.gstatic.com/lamda/images/gemini_sparkle_aurora_33f86dc0c0257da337c63.svg)
+
+SHA-256 of the original assets
 
 - `bing.png`: `5cbda906c7db6d50c7e200d73841a7bb7404bcff1b3c9121aa5bc79dbc608b9a`
 - `chatgpt.svg`: `7be72f1fea831d3ba81a545cee79b7e0ae69449d5d7837c9571ccbfb4aa1e00b`
