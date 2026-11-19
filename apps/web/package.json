@@ -10,6 +10,7 @@
     "preview": "nuxt preview",
     "typecheck": "nuxt typecheck",
     "verify:ssr": "node scripts/verify-ssr.mjs",
+    "verify:previews": "node scripts/verify-previews.mjs",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {

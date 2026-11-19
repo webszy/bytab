@@ -19,7 +19,7 @@ watch(() => props.feature?.id, id => {
     <div class="home-background" aria-hidden="true" />
     <SiteHeader :inert="Boolean(feature)" @settings="settingsOpen = true" />
     <main class="home-main" :inert="Boolean(feature)">
-      <HomepageHero />
+      <HomepageHero :tooltip-blocked="settingsOpen || Boolean(feature)" />
     </main>
     <div class="home-bottom-buffer" aria-hidden="true" />
     <FeatureModal :feature="feature">

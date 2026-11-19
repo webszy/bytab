@@ -2,19 +2,20 @@
 import HomeIcon from '#extension-home/HomeIcon.vue';
 import PromptProviderIcon from '#extension-home/PromptProviderIcon.vue';
 
-defineProps<{ open: boolean; otherOpen: boolean }>();
-defineEmits<{ 'update:open': [open: boolean] }>();
+defineProps<{ buttonId: string; open: boolean; suppress: boolean }>();
+defineEmits<{ toggle: [] }>();
 </script>
 
 <template>
   <PreviewTooltip
     class="home-prompt extension-prompt prompt-preview"
     button-class="preview-trigger"
+    :button-id="buttonId"
     :open="open"
-    :other-open="otherOpen"
+    :suppress="suppress"
     label="About the prompt bar in the Chrome extension"
     description="Start a web search or quickly open your favorite AI tools from your new tab."
-    @update:open="$emit('update:open', $event)"
+    @toggle="$emit('toggle')"
   >
     <span class="prompt-symbol" aria-hidden="true"><HomeIcon name="sparkle" /></span>
     <span class="prompt-input">Ask anything...</span>
