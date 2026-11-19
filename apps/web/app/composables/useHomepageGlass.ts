@@ -5,6 +5,20 @@ import { glassMaterial, loadGlassWallpaper, sampleGlassWallpaper, type GlassInk 
 export const homepageThemePreferences = ['system', 'light', 'dark'] as const;
 export type HomepageThemePreference = typeof homepageThemePreferences[number];
 
+const preferenceStoragePrefix = 'bytab:web:glass:';
+
+// The browser runs this first child of the server-rendered shell before parsing its visible content.
+export const homepageInitialThemeScript = `(() => {
+  try {
+    const theme = localStorage.getItem(${JSON.stringify(preferenceStoragePrefix + 'theme')});
+    if (theme === 'light' || theme === 'dark') {
+      document.currentScript?.parentElement?.setAttribute('data-theme', theme);
+    }
+  } catch {
+    // The system styles apply when localStorage is unavailable.
+  }
+})();`;
+
 const surfaces = [
   { id: 'prompt', selector: '.extension-prompt', lens: true, rowHighlight: 0.08 },
   { id: 'models', selector: '.model-menu', lens: false, rowHighlight: 0.14 },
@@ -15,7 +29,7 @@ const dialogDockInkId = 'dock:dialog';
 
 function readPreference(key: string) {
   try {
-    return localStorage.getItem(`bytab:web:glass:${key}`);
+    return localStorage.getItem(preferenceStoragePrefix + key);
   } catch {
     return null;
   }
@@ -23,7 +37,7 @@ function readPreference(key: string) {
 
 function savePreference(key: string, value: string | null) {
   try {
-    const storageKey = `bytab:web:glass:${key}`;
+    const storageKey = preferenceStoragePrefix + key;
     if (value === null) localStorage.removeItem(storageKey);
     else localStorage.setItem(storageKey, value);
   } catch {
@@ -38,6 +52,11 @@ export function useHomepageGlassTints() {
 export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
   const tints = useHomepageGlassTints();
   const themePreference = ref<HomepageThemePreference>('system');
+  if (import.meta.client && useNuxtApp().isHydrating) {
+    // Start Vue with the theme already applied by the inline script.
+    const renderedTheme = document.querySelector<HTMLElement>('.website-home')?.dataset.theme;
+    if (renderedTheme === 'light' || renderedTheme === 'dark') themePreference.value = renderedTheme;
+  }
   const systemTheme = ref<'light' | 'dark'>();
   const effectiveTheme = computed(() => themePreference.value === 'system' ? systemTheme.value : themePreference.value);
   let dispose: (() => void) | undefined;
@@ -62,7 +81,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
 
     const darkTheme = matchMedia('(prefers-color-scheme: dark)');
     const storedTheme = readPreference('theme');
-    if (storedTheme === 'light' || storedTheme === 'dark') themePreference.value = storedTheme;
+    themePreference.value = storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : 'system';
     updateSystemTheme();
     const solidGlass = matchMedia('(prefers-reduced-transparency: reduce), (forced-colors: active)');
     const lensSupported = supportsGlassLens();
