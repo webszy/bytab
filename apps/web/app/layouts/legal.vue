@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { legalDocuments } from '#shared/site';
+import { legalDocuments, supportPage } from '#shared/site';
 import brandLogo from '../../../shared/ByTab_Brand_Kit_v1.0/02_Logo_Lockups/horizontal-charcoal-minimal.svg?url';
 import brandLogoLight from '../../../shared/ByTab_Brand_Kit_v1.0/02_Logo_Lockups/horizontal-white-minimal.svg?url';
 
 const route = useRoute();
+const navigation = [...legalDocuments, supportPage];
 </script>
 
 <template>
@@ -16,7 +17,7 @@ const route = useRoute();
       <nav class="legal-nav" aria-label="Site">
         <NuxtLink to="/">Home</NuxtLink>
         <NuxtLink
-          v-for="item in legalDocuments"
+          v-for="item in navigation"
           :key="item.path"
           :to="item.path"
           :aria-current="route.path === item.path ? 'page' : undefined"
@@ -32,7 +33,7 @@ const route = useRoute();
       <nav aria-label="Footer">
         <NuxtLink to="/">Back to bytab</NuxtLink>
         <NuxtLink
-          v-for="item in legalDocuments"
+          v-for="item in navigation"
           :key="item.path"
           :to="item.path"
           :aria-current="route.path === item.path ? 'page' : undefined"

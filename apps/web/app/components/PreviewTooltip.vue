@@ -1,35 +1,49 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   label: string;
   description: string;
   buttonClass: string;
   buttonId?: string;
+  open: boolean;
+  otherOpen: boolean;
+  preferBelow?: boolean;
 }>();
+const emit = defineEmits<{ 'update:open': [open: boolean] }>();
 
 const anchor = useTemplateRef<HTMLElement>('anchor');
+const trigger = useTemplateRef<HTMLButtonElement>('trigger');
 const tip = useTemplateRef<HTMLElement>('tip');
-const open = ref(false);
 const below = ref(false);
 const tipId = useId();
-const route = useRoute();
 
 function placeTooltip() {
-  if (!open.value || !anchor.value || !tip.value) return;
+  if (!props.open || !anchor.value || !tip.value) return;
   const rect = anchor.value.getBoundingClientRect();
   const spaceBelow = window.innerHeight - rect.bottom;
-  below.value = rect.top < tip.value.offsetHeight + 16 && spaceBelow > rect.top;
+  const spaceNeeded = tip.value.offsetHeight + 16;
+  below.value = (props.preferBelow && spaceBelow >= spaceNeeded)
+    || (rect.top < spaceNeeded && spaceBelow > rect.top);
 }
 
 function dismissOutside(event: Event) {
-  if (event.target instanceof Node && !anchor.value?.contains(event.target)) open.value = false;
+  const target = event.target;
+  if (props.open && target instanceof Node && !trigger.value?.contains(target) && !tip.value?.contains(target)) {
+    emit('update:open', false);
+  }
 }
 
 function dismissOnEscape(event: KeyboardEvent) {
-  if (event.key === 'Escape') open.value = false;
+  if (!props.open || event.defaultPrevented || event.key !== 'Escape') return;
+  event.preventDefault();
+  emit('update:open', false);
+  trigger.value?.focus({ preventScroll: true });
 }
 
-watch(() => route.fullPath, () => { open.value = false; });
-watch(open, (visible, _, onCleanup) => {
+function focusTooltip() {
+  if (props.open) tip.value?.focus({ preventScroll: true });
+}
+
+watch(() => props.open, (visible, _, onCleanup) => {
   if (!visible) return;
   placeTooltip();
   document.addEventListener('click', dismissOutside, true);
@@ -50,13 +64,15 @@ watch(open, (visible, _, onCleanup) => {
 <template>
   <div ref="anchor" :class="{ 'tip-open': open }">
     <slot name="preview" />
-    <button :id="buttonId" type="button" :class="buttonClass" :aria-label="label"
-      :aria-expanded="open" :aria-controls="tipId" :aria-describedby="open ? tipId : undefined"
-      @click="open = !open">
+    <button :id="buttonId" ref="trigger" type="button" :class="buttonClass" :aria-label="label"
+      aria-haspopup="dialog" :aria-expanded="open" :aria-controls="tipId"
+      @click="emit('update:open', !open)">
       <slot />
     </button>
-    <Transition name="preview-tip">
-      <div v-show="open" :id="tipId" ref="tip" class="preview-tooltip" :class="{ below }" role="tooltip">
+    <Transition name="preview-tip" @after-enter="focusTooltip">
+      <div v-show="open" :id="tipId" ref="tip" class="preview-tooltip"
+        :class="{ below, 'preview-tooltip--hidden': otherOpen }"
+        :role="open ? 'dialog' : undefined" :aria-label="label" tabindex="-1">
         <strong>Available in the Chrome extension</strong>
         <p>{{ description }}</p>
         <small>This website is a preview only.</small>
@@ -85,6 +101,8 @@ watch(open, (visible, _, onCleanup) => {
   transform-origin: center bottom;
 }
 .preview-tooltip.below { top: calc(100% + 10px); bottom: auto; transform-origin: center top; }
+.preview-tooltip--hidden { display: none; }
+.preview-tooltip:focus { outline: none; }
 .intro-hotspot--shortcuts .preview-tooltip { color: light-dark(#222328, #f5f5f7); }
 .preview-tooltip p { margin: 5px 0 8px; }
 .preview-tooltip small { color: var(--glass-secondary-ink); font-size: 12px; }

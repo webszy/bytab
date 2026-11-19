@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { homepageSeo, legalDocuments, resolveChromeWebStoreUrl, resolveSiteOrigin, siteFeatures, sitePaths } from '../shared/site.ts';
+import { homepageSeo, legalDocuments, resolveChromeWebStoreUrl, resolveSiteOrigin, siteFeatures, sitePaths, supportPage } from '../shared/site.ts';
 
 // Run against a running Nuxt dev or production server; no browser or extra
 // dependency is needed. An HTTP fetch verifies the actual server-rendered HTML.
@@ -43,6 +43,7 @@ const pages = [
   ...legalDocuments.map(document => ({
     path: document.path, title: document.seoTitle, description: document.seoDescription, legal: true,
   })),
+  { path: supportPage.path, title: supportPage.seoTitle, description: supportPage.seoDescription, support: true },
 ];
 
 function decode(value = '') {
@@ -101,7 +102,7 @@ for (const page of pages) {
     } else {
       assert.match(html, /<button\b(?=[^>]*class="chrome-install")(?=[^>]*\bdisabled)[^>]*>Coming Soon<\/button>/);
     }
-    assert.ok(html.includes('Ask anything...') && html.includes('role="tooltip"') && text.includes('This website is a preview only.'));
+    assert.ok(html.includes('Ask anything...') && html.includes('aria-haspopup="dialog"') && text.includes('This website is a preview only.'));
     assert.ok(!html.includes('id="home-prompt-input"') && !html.includes('aria-label="Select provider"'));
     assert.ok(html.includes('Frequent Shortcuts') && html.includes('Reset layout'), `${page.path}: extension shortcut bar`);
     const privacyDock = (html.match(/<a\b[^>]*>/g) || []).find(tag => attribute(tag, 'id') === 'dock-privacy');
@@ -133,6 +134,7 @@ for (const page of pages) {
     assert.ok(!html.includes('bookmark-dock'), `${page.path}: legal page is not the homepage shell`);
     assert.ok(html.includes('<h1>'), `${page.path}: document heading`);
     assert.ok(html.includes('href="/"'), `${page.path}: return home`);
+    assert.ok(html.includes('href="/support"'), `${page.path}: Support navigation`);
     assert.ok(!text.includes('not yet confirmed') && !text.includes('not published in this version'));
     assert.ok(html.includes('datetime="2026-11-19"') && text.includes('Last updated'));
     assert.ok(text.includes('SUN ZHENYU') && html.includes('href="mailto:szyszylife@gmail.com"'));
@@ -143,6 +145,15 @@ for (const page of pages) {
       ? ['Introduction', 'Information We Access', 'How We Use Information', 'Chrome Permissions', 'Local Storage and Data Retention', 'Third-Party AI and Search Services', 'Data Sharing and Transfers', 'Website Analytics and Technical Logs', 'Data Security', 'User Choices and Data Deletion', "Children's Privacy", 'Chrome Web Store User Data Policy', 'Changes to This Policy', 'Contact Information', 'Limited Use', 'gemini.google.com', 'not uploaded', 'chrome.storage.local', 'Cloudflare']
       : ['Acceptance of Terms', 'Description of Service', 'Eligibility and Permitted Use', 'User Responsibilities', 'Third-Party Services and Websites', 'Intellectual Property', 'Availability and Changes', 'Disclaimers', 'Limitation of Liability', 'Termination', 'Updates to Terms', 'Contact Information', 'free to use'];
     for (const phrase of required) assert.ok(text.includes(phrase), `${page.path}: ${phrase}`);
+  } else if (page.support) {
+    assert.ok(!html.includes('bookmark-dock'), 'Support is a standalone page');
+    assert.match(html, /<h1\b[^>]*>Support<\/h1>/);
+    for (const phrase of ['Getting Started', 'Frequently Asked Questions', 'Still need help?', 'Contact Support']) {
+      assert.ok(text.includes(phrase), `Support includes ${phrase}`);
+    }
+    assert.ok(html.includes('href="mailto:szyszylife@gmail.com?subject=bytab%20Support%20%E2%80%94%20"'));
+    assert.ok(html.includes('href="/privacy"') && html.includes('href="/terms"'), 'Support links to Privacy and Terms');
+    assert.ok(!/noindex/i.test(metadata(html, 'robots') ?? ''), 'Support is indexable');
   } else {
     assert.ok(!html.includes('role="dialog"'), 'Homepage has no open dialog');
   }

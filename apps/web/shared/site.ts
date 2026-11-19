@@ -84,10 +84,18 @@ export const legalDocuments = [
   },
 ] as const satisfies readonly LegalDocument[];
 
+export const supportPage = {
+  path: '/support',
+  title: 'Support',
+  seoTitle: 'Support & FAQ — bytab',
+  seoDescription: 'Get help with bytab for Chrome. Find answers about bookmarks, shortcuts, privacy, customization, and troubleshooting.',
+} as const;
+
 export const sitePaths = [
   '/',
   ...siteFeatures.map(feature => feature.path),
   ...legalDocuments.map(document => document.path),
+  supportPage.path,
 ];
 
 export function findSiteFeature(path: string): SiteFeature | undefined {

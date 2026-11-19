@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import HomeDialog from '#extension-home/HomeDialog.vue';
+import { supportPage } from '#shared/site';
 import { homepageThemePreferences, useHomepageGlassTints, type HomepageThemePreference } from '~/composables/useHomepageGlass';
 
 defineProps<{ theme: HomepageThemePreference }>();
@@ -35,6 +36,10 @@ const tints = useHomepageGlassTints();
         <output :for="`glass-tint-${mode}`" aria-hidden="true">{{ Math.round(tints[mode] * 100) }}%</output>
       </div>
     </fieldset>
+    <section class="appearance-help" aria-labelledby="appearance-help-heading">
+      <h3 id="appearance-help-heading">Help</h3>
+      <NuxtLink :to="supportPage.path" @click="$emit('close')">{{ supportPage.title }}</NuxtLink>
+    </section>
   </HomeDialog>
 </template>
 
@@ -80,4 +85,6 @@ const tints = useHomepageGlassTints();
 }
 .glass-tint-setting input { width: 100%; accent-color: var(--appearance-accent); }
 .glass-tint-setting output { text-align: right; font-variant-numeric: tabular-nums; }
+.appearance-help h3 { margin: 0 0 4px; font-size: 14px; }
+.appearance-help a { color: var(--appearance-accent); font-size: 13px; }
 </style>
