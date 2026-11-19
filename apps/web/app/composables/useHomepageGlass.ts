@@ -2,6 +2,9 @@ import type { Ref } from 'vue';
 import { createGlassLens, supportsGlassLens } from '~/utils/glassLens';
 import { glassMaterial, loadGlassWallpaper, sampleGlassWallpaper, type GlassInk } from '~/utils/glassScene';
 
+export const homepageThemePreferences = ['system', 'light', 'dark'] as const;
+export type HomepageThemePreference = typeof homepageThemePreferences[number];
+
 const surfaces = [
   { id: 'prompt', selector: '.extension-prompt', lens: true, rowHighlight: 0.08 },
   { id: 'models', selector: '.model-menu', lens: false, rowHighlight: 0.14 },
@@ -18,9 +21,11 @@ function readPreference(key: string) {
   }
 }
 
-function savePreference(key: string, value: string) {
+function savePreference(key: string, value: string | null) {
   try {
-    localStorage.setItem(`bytab:web:glass:${key}`, value);
+    const storageKey = `bytab:web:glass:${key}`;
+    if (value === null) localStorage.removeItem(storageKey);
+    else localStorage.setItem(storageKey, value);
   } catch {
     // Preferences still apply to the open page if storage is unavailable.
   }
@@ -32,14 +37,14 @@ export function useHomepageGlassTints() {
 
 export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
   const tints = useHomepageGlassTints();
-  const theme = ref<'light' | 'dark'>('light');
-  let hasThemePreference = false;
+  const themePreference = ref<HomepageThemePreference>('system');
+  const systemTheme = ref<'light' | 'dark'>();
+  const effectiveTheme = computed(() => themePreference.value === 'system' ? systemTheme.value : themePreference.value);
   let dispose: (() => void) | undefined;
 
-  function selectTheme(mode: 'light' | 'dark') {
-    hasThemePreference = true;
-    theme.value = mode;
-    savePreference('theme', mode);
+  function selectTheme(preference: HomepageThemePreference) {
+    themePreference.value = preference;
+    savePreference('theme', preference === 'system' ? null : preference);
   }
 
   onMounted(() => {
@@ -57,12 +62,8 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
 
     const darkTheme = matchMedia('(prefers-color-scheme: dark)');
     const storedTheme = readPreference('theme');
-    if (storedTheme === 'light' || storedTheme === 'dark') {
-      hasThemePreference = true;
-      theme.value = storedTheme;
-    } else {
-      updateSystemTheme();
-    }
+    if (storedTheme === 'light' || storedTheme === 'dark') themePreference.value = storedTheme;
+    updateSystemTheme();
     const solidGlass = matchMedia('(prefers-reduced-transparency: reduce), (forced-colors: active)');
     const lensSupported = supportsGlassLens();
     const featureLayer = homepage.querySelector('.feature-layer');
@@ -72,7 +73,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
       const ink = readPreference(`ink:${id}`);
       if (ink === 'light' || ink === 'dark') lastInks.set(id, ink);
     }
-    if (theme.value === 'light') {
+    if (effectiveTheme.value === 'light') {
       const dialogOpen = featureLayer?.getAttribute('role') === 'dialog';
       for (const { id, selector } of surfaces) {
         const inkId = dialogOpen && id === 'dock' ? dialogDockInkId : id;
@@ -94,7 +95,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
     }
 
     function updateSystemTheme() {
-      if (!hasThemePreference) theme.value = darkTheme.matches ? 'dark' : 'light';
+      systemTheme.value = darkTheme.matches ? 'dark' : 'light';
     }
 
     const update = () => {
@@ -112,7 +113,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
 
       const bounds = background.getBoundingClientRect();
       const dialogOpen = featureLayer?.getAttribute('role') === 'dialog';
-      const dark = theme.value === 'dark';
+      const dark = effectiveTheme.value === 'dark';
       const allowedLens = lensSupported && !solidGlass.matches;
       const targets = surfaces.flatMap(part => {
         const element = homepage.querySelector<HTMLElement>(part.selector);
@@ -191,7 +192,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
     sceneChanges.observe(homepage, wallpaperAttributes);
     sceneChanges.observe(background, wallpaperAttributes);
     if (featureLayer) sceneChanges.observe(featureLayer, { attributes: true, attributeFilter: ['role'] });
-    watch(theme, schedule, { flush: 'post' });
+    watch(effectiveTheme, schedule, { flush: 'post' });
     darkTheme.addEventListener('change', updateSystemTheme);
     solidGlass.addEventListener('change', schedule);
     window.addEventListener('resize', schedule);
@@ -215,7 +216,8 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
 
   onBeforeUnmount(() => dispose?.());
   return {
-    theme,
+    effectiveTheme,
+    themePreference,
     selectTheme,
     tints: computed(() => ({
       '--glass-light-tint': tints.value.light,

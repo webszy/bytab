@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import HomeDialog from '#extension-home/HomeDialog.vue';
+import { homepageThemePreferences, useHomepageGlassTints, type HomepageThemePreference } from '~/composables/useHomepageGlass';
 
-defineProps<{ theme: 'light' | 'dark' }>();
-defineEmits<{ close: []; theme: [mode: 'light' | 'dark'] }>();
+defineProps<{ theme: HomepageThemePreference }>();
+defineEmits<{ close: []; theme: [preference: HomepageThemePreference] }>();
 
 const modes = ['light', 'dark'] as const;
 const tints = useHomepageGlassTints();
@@ -13,12 +14,12 @@ const tints = useHomepageGlassTints();
     <fieldset class="appearance-setting">
       <legend>Theme</legend>
       <div class="theme-options">
-        <label v-for="mode in modes" :key="mode" class="dialog-button theme-option">
+        <label v-for="preference in homepageThemePreferences" :key="preference" class="dialog-button theme-option">
           <input
-            type="radio" name="appearance-theme" :value="mode" :checked="theme === mode"
-            @click="$emit('theme', mode)"
+            type="radio" name="appearance-theme" :value="preference" :checked="theme === preference"
+            @change="$emit('theme', preference)"
           />
-          {{ mode === 'light' ? 'Light' : 'Dark' }}
+          {{ preference.charAt(0).toUpperCase() + preference.slice(1) }}
         </label>
       </div>
     </fieldset>
@@ -55,9 +56,10 @@ const tints = useHomepageGlassTints();
   border-bottom: 1px solid light-dark(rgb(0 0 0 / 10%), rgb(255 255 255 / 14%));
 }
 .appearance-setting legend { font-size: 14px; font-weight: 600; }
-.theme-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.theme-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
 .theme-option {
   gap: 6px;
+  padding-inline: 4px;
   cursor: pointer;
   border-color: light-dark(rgb(0 0 0 / 10%), rgb(255 255 255 / 16%));
   background: light-dark(rgb(255 255 255 / 80%), rgb(255 255 255 / 7%));

@@ -14,6 +14,29 @@
   height: 100dvh;
 }
 
+/* Use the system wallpaper until the client resolves the saved theme preference. */
+@media (prefers-color-scheme: dark) {
+  .website-home[data-theme='system'] {
+    color-scheme: dark;
+    --home-wallpaper: url('../../../../extension/assets/wallpapers/dark.webp');
+    --home-night-ink: #f5f8ff;
+    --home-night-shadow: 0 1px 8px rgb(0 0 0 / 72%);
+  }
+
+  .website-home[data-theme='system'] .home-background { background-color: #06152d; }
+
+  .website-home[data-theme='system'] .home-background::before,
+  .website-home[data-theme='system'] .home-background::after,
+  .website-home[data-theme='system'] .home-brand-logo:not(.home-brand-logo--night) { display: none; }
+
+  .website-home[data-theme='system'] .home-brand-logo--night { display: block; }
+
+  .website-home[data-theme='system'] :is(.home-time, .home-date, .home-holiday) {
+    color: var(--home-night-ink);
+    text-shadow: var(--home-night-shadow);
+  }
+}
+
 .website-home .home-topbar {
   padding-top: max(20px, env(safe-area-inset-top, 0px));
 }
