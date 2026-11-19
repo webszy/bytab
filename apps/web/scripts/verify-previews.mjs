@@ -56,8 +56,13 @@ try {
   await page.waitForLoadState('networkidle');
   const promptRequests = [];
   const capturePromptRequests = request => {
+    const url = new URL(request.url());
+    const sameOrigin = url.origin === base.origin;
+    // Nuxt fetches its build manifests in the background on production pages.
+    if (sameOrigin && request.method() === 'GET'
+      && /^\/_nuxt\/builds\/(?:latest|meta\/[a-f0-9-]+)\.json$/.test(url.pathname)) return;
     if (request.method() !== 'GET' || ['fetch', 'xhr', 'websocket'].includes(request.resourceType())
-      || new URL(request.url()).origin !== base.origin) promptRequests.push(request.url());
+      || !sameOrigin) promptRequests.push(request.url());
   };
   page.on('request', capturePromptRequests);
   for (const key of ['Enter', 'Space']) {
