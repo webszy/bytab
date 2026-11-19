@@ -33,7 +33,14 @@ export function useHomepageGlassTints() {
 export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
   const tints = useHomepageGlassTints();
   const theme = ref<'light' | 'dark'>('light');
+  let hasThemePreference = false;
   let dispose: (() => void) | undefined;
+
+  function selectTheme(mode: 'light' | 'dark') {
+    hasThemePreference = true;
+    theme.value = mode;
+    savePreference('theme', mode);
+  }
 
   onMounted(() => {
     const homepage = root.value;
@@ -49,6 +56,13 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
     }
 
     const darkTheme = matchMedia('(prefers-color-scheme: dark)');
+    const storedTheme = readPreference('theme');
+    if (storedTheme === 'light' || storedTheme === 'dark') {
+      hasThemePreference = true;
+      theme.value = storedTheme;
+    } else {
+      updateSystemTheme();
+    }
     const solidGlass = matchMedia('(prefers-reduced-transparency: reduce), (forced-colors: active)');
     const lensSupported = supportsGlassLens();
     const featureLayer = homepage.querySelector('.feature-layer');
@@ -58,7 +72,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
       const ink = readPreference(`ink:${id}`);
       if (ink === 'light' || ink === 'dark') lastInks.set(id, ink);
     }
-    if (!darkTheme.matches) {
+    if (theme.value === 'light') {
       const dialogOpen = featureLayer?.getAttribute('role') === 'dialog';
       for (const { id, selector } of surfaces) {
         const inkId = dialogOpen && id === 'dock' ? dialogDockInkId : id;
@@ -79,9 +93,8 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
       if (!stopped && !frame) frame = requestAnimationFrame(update);
     }
 
-    function updateTheme() {
-      theme.value = darkTheme.matches ? 'dark' : 'light';
-      schedule();
+    function updateSystemTheme() {
+      if (!hasThemePreference) theme.value = darkTheme.matches ? 'dark' : 'light';
     }
 
     const update = () => {
@@ -99,7 +112,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
 
       const bounds = background.getBoundingClientRect();
       const dialogOpen = featureLayer?.getAttribute('role') === 'dialog';
-      const dark = darkTheme.matches;
+      const dark = theme.value === 'dark';
       const allowedLens = lensSupported && !solidGlass.matches;
       const targets = surfaces.flatMap(part => {
         const element = homepage.querySelector<HTMLElement>(part.selector);
@@ -178,12 +191,13 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
     sceneChanges.observe(homepage, wallpaperAttributes);
     sceneChanges.observe(background, wallpaperAttributes);
     if (featureLayer) sceneChanges.observe(featureLayer, { attributes: true, attributeFilter: ['role'] });
-    darkTheme.addEventListener('change', updateTheme);
+    watch(theme, schedule, { flush: 'post' });
+    darkTheme.addEventListener('change', updateSystemTheme);
     solidGlass.addEventListener('change', schedule);
     window.addEventListener('resize', schedule);
     window.addEventListener('scroll', schedule, { capture: true, passive: true });
     void document.fonts.ready.then(schedule);
-    updateTheme();
+    schedule();
 
     dispose = () => {
       stopped = true;
@@ -191,7 +205,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
       resize.disconnect();
       contentChanges.disconnect();
       sceneChanges.disconnect();
-      darkTheme.removeEventListener('change', updateTheme);
+      darkTheme.removeEventListener('change', updateSystemTheme);
       solidGlass.removeEventListener('change', schedule);
       window.removeEventListener('resize', schedule);
       window.removeEventListener('scroll', schedule, true);
@@ -202,6 +216,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
   onBeforeUnmount(() => dispose?.());
   return {
     theme,
+    selectTheme,
     tints: computed(() => ({
       '--glass-light-tint': tints.value.light,
       '--glass-dark-tint': tints.value.dark,

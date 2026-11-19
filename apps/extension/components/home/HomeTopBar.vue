@@ -3,7 +3,9 @@ import type { Component } from 'vue';
 import brandLogo from '../../../shared/ByTab_Brand_Kit_v1.0/02_Logo_Lockups/horizontal-charcoal-minimal.svg?url';
 import HomeIcon from './HomeIcon.vue';
 
-defineProps<{ bookmarksUnavailable?: boolean; linkComponent?: Component }>();
+withDefaults(defineProps<{ bookmarksUnavailable?: boolean; linkComponent?: Component; showTagline?: boolean }>(), {
+  showTagline: true,
+});
 defineEmits<{ settings: [] }>();
 </script>
 
@@ -13,8 +15,10 @@ defineEmits<{ settings: [] }>();
       <h1 class="home-brand-heading">
         <img class="home-brand-logo" :src="brandLogo" alt="bytab" />
       </h1>
-      <span class="home-brand-divider" aria-hidden="true" />
-      <p class="home-brand-tagline">Start your day.<br />Start with bytab.</p>
+      <template v-if="showTagline">
+        <span class="home-brand-divider" aria-hidden="true" />
+        <p class="home-brand-tagline">Start your day.<br />Start with bytab.</p>
+      </template>
       <template v-if="bookmarksUnavailable">
         <span class="home-brand-divider" aria-hidden="true" />
         <p class="home-bookmark-status">Bookmarks unavailable</p>

@@ -6,5 +6,5 @@ defineEmits<{ settings: [] }>();
 </script>
 
 <template>
-  <HomeTopBar :link-component="NuxtLink" @settings="$emit('settings')" />
+  <HomeTopBar :link-component="NuxtLink" :show-tagline="false" @settings="$emit('settings')" />
 </template>

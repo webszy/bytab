@@ -94,6 +94,14 @@ export function findSiteFeature(path: string): SiteFeature | undefined {
   return siteFeatures.find(feature => feature.path === path.replace(/\/$/, ''));
 }
 
+export function resolveChromeWebStoreUrl(value: string): string | undefined {
+  if (!value || !URL.canParse(value)) return;
+  const url = new URL(value);
+  if (url.origin !== 'https://chromewebstore.google.com' || url.username || url.password) return;
+  if (!/^\/detail\/(?:[^/]+\/)?[a-p]{32}\/?$/.test(url.pathname)) return;
+  return url.origin + url.pathname;
+}
+
 export function resolveSiteOrigin(configuredUrl: string, requestOrigin: string): string {
   if (configuredUrl) {
     const url = new URL(configuredUrl);

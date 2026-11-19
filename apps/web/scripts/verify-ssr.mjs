@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { homepageSeo, legalDocuments, resolveSiteOrigin, siteFeatures, sitePaths } from '../shared/site.ts';
+import { homepageSeo, legalDocuments, resolveChromeWebStoreUrl, resolveSiteOrigin, siteFeatures, sitePaths } from '../shared/site.ts';
 
 // Run against a running Nuxt dev or production server; no browser or extra
 // dependency is needed. An HTTP fetch verifies the actual server-rendered HTML.
@@ -88,10 +88,21 @@ for (const page of pages) {
       assert.ok(html.includes(`href="${feature.path}"`), `${page.path}: crawlable ${feature.id} link`);
     }
     assert.ok(html.includes('class="home-brand-logo"') && html.includes('alt="bytab"'), `${page.path}: brand lockup`);
-    assert.ok(html.includes('Start your day.') && html.includes('>Settings<'), `${page.path}: extension header`);
+    assert.ok(!html.includes('class="home-brand-tagline"'), `${page.path}: logo tagline is hidden`);
+    assert.ok(html.includes('>Settings<'), `${page.path}: settings button`);
     assert.ok(html.includes('class="home-time"') && html.includes('class="home-date"'), `${page.path}: clock and date`);
-    assert.ok(html.includes('Last Opened') && html.includes('Last Closed'), `${page.path}: recent page previews`);
-    assert.ok(html.includes('home-prompt extension-prompt') && html.includes('Ask anything...'), `${page.path}: extension prompt`);
+    assert.ok(html.includes('Start your day. Start with bytab.'), `${page.path}: homepage tagline`);
+    assert.ok(!html.includes('class="home-recent"'), `${page.path}: recent page previews are removed`);
+    const installLink = (html.match(/<a\b[^>]*>/g) || []).find(tag => attribute(tag, 'class') === 'chrome-install');
+    if (installLink) {
+      const href = attribute(installLink, 'href');
+      assert.ok(href && resolveChromeWebStoreUrl(href) === href, `${page.path}: official store listing`);
+      assert.equal(attribute(installLink, 'target'), '_blank');
+    } else {
+      assert.match(html, /<button\b(?=[^>]*class="chrome-install")(?=[^>]*\bdisabled)[^>]*>Coming Soon<\/button>/);
+    }
+    assert.ok(html.includes('Ask anything...') && html.includes('role="tooltip"') && text.includes('This website is a preview only.'));
+    assert.ok(!html.includes('id="home-prompt-input"') && !html.includes('aria-label="Select provider"'));
     assert.ok(html.includes('Frequent Shortcuts') && html.includes('Reset layout'), `${page.path}: extension shortcut bar`);
     const privacyDock = (html.match(/<a\b[^>]*>/g) || []).find(tag => attribute(tag, 'id') === 'dock-privacy');
     assert.equal(attribute(privacyDock || '', 'href'), '/features/privacy', `${page.path}: privacy Dock opens the intro`);
@@ -122,13 +133,15 @@ for (const page of pages) {
     assert.ok(!html.includes('bookmark-dock'), `${page.path}: legal page is not the homepage shell`);
     assert.ok(html.includes('<h1>'), `${page.path}: document heading`);
     assert.ok(html.includes('href="/"'), `${page.path}: return home`);
-    assert.ok(text.includes('not yet confirmed'), `${page.path}: unconfirmed operator details stay explicit`);
+    assert.ok(!text.includes('not yet confirmed') && !text.includes('not published in this version'));
+    assert.ok(html.includes('datetime="2026-11-19"') && text.includes('Last updated'));
+    assert.ok(text.includes('SUN ZHENYU') && html.includes('href="mailto:szyszylife@gmail.com"'));
     for (const invented of ['privacy@', 'support@', 'Bytab Inc', 'Bytab, Inc', 'LLC', 'Ltd.', 'TODO', 'lorem', '[Company', 'Delaware']) {
       assert.ok(!text.includes(invented), `${page.path}: no invented detail ${invented}`);
     }
     const required = page.path === '/privacy'
       ? ['Introduction', 'Information We Access', 'How We Use Information', 'Chrome Permissions', 'Local Storage and Data Retention', 'Third-Party AI and Search Services', 'Data Sharing and Transfers', 'Website Analytics and Technical Logs', 'Data Security', 'User Choices and Data Deletion', "Children's Privacy", 'Chrome Web Store User Data Policy', 'Changes to This Policy', 'Contact Information', 'Limited Use', 'gemini.google.com', 'not uploaded', 'chrome.storage.local', 'Cloudflare']
-      : ['Acceptance of Terms', 'Description of Service', 'Eligibility and Permitted Use', 'User Responsibilities', 'Third-Party Services and Websites', 'Intellectual Property', 'Availability and Changes', 'Disclaimers', 'Limitation of Liability', 'Termination', 'Updates to Terms', 'Contact Information', 'does not sell access', 'Governing law and dispute venue'];
+      : ['Acceptance of Terms', 'Description of Service', 'Eligibility and Permitted Use', 'User Responsibilities', 'Third-Party Services and Websites', 'Intellectual Property', 'Availability and Changes', 'Disclaimers', 'Limitation of Liability', 'Termination', 'Updates to Terms', 'Contact Information', 'free to use'];
     for (const phrase of required) assert.ok(text.includes(phrase), `${page.path}: ${phrase}`);
   } else {
     assert.ok(!html.includes('role="dialog"'), 'Homepage has no open dialog');

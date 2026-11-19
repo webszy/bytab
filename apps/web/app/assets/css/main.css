@@ -22,6 +22,44 @@
   z-index: auto;
 }
 
+.homepage-install-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 14px;
+  max-width: 100%;
+  margin: 0 0 18px;
+}
+
+.homepage-tagline {
+  margin: 0;
+  color: var(--glass-secondary-ink);
+  font-weight: 500;
+  text-align: center;
+}
+
+.chrome-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border: 1px solid rgb(255 255 255 / 60%);
+  border-radius: 999px;
+  background: rgb(250 250 252 / 76%);
+  box-shadow: inset 0 1px 0 #ffffff75, 0 2px 6px #00000015;
+  color: #36383d;
+  font: 600 12px/1.25 system-ui, sans-serif;
+  text-decoration: none;
+}
+
+a.chrome-install:hover { background: rgb(255 255 255 / 94%); }
+.chrome-install:focus-visible { outline: 2px solid #0071e3; outline-offset: 3px; }
+.chrome-install:disabled { cursor: default; }
+@media (max-width: 520px) {
+  .homepage-install-row { flex-direction: column; }
+}
+
 .website-home .home-bottom-buffer,
 .website-home .bookmark-dock {
   height: var(--dock-height);
@@ -126,11 +164,6 @@
   background: transparent;
   cursor: pointer;
   appearance: none;
-}
-.website-home .intro-hotspot--prompt .intro-hotspot-hit {
-  bottom: auto;
-  height: 56px;
-  border-radius: 9999px;
 }
 .website-home .intro-hotspot:hover .intro-hotspot-hit,
 .website-home .intro-hotspot:focus-within .intro-hotspot-hit {
