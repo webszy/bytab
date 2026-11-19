@@ -49,7 +49,7 @@ const tints = useHomepageGlassTints();
   background: light-dark(rgb(0 0 0 / 5%), rgb(255 255 255 / 8%));
 }
 .appearance-setting { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
-.appearance-setting:first-child-of-type {
+.appearance-setting:first-of-type {
   margin-bottom: 18px;
   padding-bottom: 18px;
   border-bottom: 1px solid light-dark(rgb(0 0 0 / 10%), rgb(255 255 255 / 14%));
