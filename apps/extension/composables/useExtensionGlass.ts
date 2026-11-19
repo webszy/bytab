@@ -54,6 +54,7 @@ export function useExtensionGlass(root: Ref<HTMLElement | null>) {
       }
       const bounds = backdrop.getBoundingClientRect();
       const dark = page.dataset.theme === 'dark';
+      const whiteWash = !dark || page.hasAttribute('data-custom-wallpaper');
       const present = new Set<HTMLElement>();
       for (const { selector, lens, highlight } of surfaces) {
         const element = page.querySelector<HTMLElement>(selector);
@@ -65,7 +66,7 @@ export function useExtensionGlass(root: Ref<HTMLElement | null>) {
         }
         const rect = element.getBoundingClientRect();
         const dragging = element.classList.contains('shortcut-bar--dragging');
-        const key = [revision, !!wallpaper, wallpaper === null, dark, solid.matches, dragging,
+        const key = [revision, !!wallpaper, wallpaper === null, dark, whiteWash, solid.matches, dragging,
           bounds.x, bounds.y, bounds.width, bounds.height, rect.x, rect.y, rect.width, rect.height,
           element.style.position].join('/');
         if (lastScene.get(element) === key) continue;
@@ -74,7 +75,7 @@ export function useExtensionGlass(root: Ref<HTMLElement | null>) {
         const previous = inks.get(selector);
         // During a drag use CSS glass and sample again at the final location.
         const material = !dragging && wallpaper && rect.width && rect.height && bounds.width && bounds.height
-          ? glassMaterial(sampleGlassWallpaper(wallpaper, bounds, rect), dark, previous, highlight) : null;
+          ? glassMaterial(sampleGlassWallpaper(wallpaper, bounds, rect, whiteWash), dark, previous, highlight) : null;
         const ink = material?.ink ?? (wallpaper === undefined || dragging ? previous : undefined);
         element.dataset.glassInk = dark || ink === 'light' ? 'light' : 'dark';
         if (material && !dark && previous !== material.ink) {
@@ -113,7 +114,7 @@ export function useExtensionGlass(root: Ref<HTMLElement | null>) {
     // Popovers mount inside the form. Only the page and the movable bar need
     // attribute observations; CSS-variable writes cannot change the scene key.
     const mutations = new MutationObserver(schedule);
-    mutations.observe(page, { attributes: true, attributeFilter: ['style', 'data-dock-position', 'data-theme'] });
+    mutations.observe(page, { attributes: true, attributeFilter: ['style', 'data-dock-position', 'data-theme', 'data-custom-wallpaper'] });
     const form = page.querySelector('.extension-prompt');
     if (form) mutations.observe(form, { childList: true, subtree: true });
     const shortcuts = page.querySelector('.home-shortcuts');

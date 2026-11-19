@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
 import brandLogo from '../../../shared/ByTab_Brand_Kit_v1.0/02_Logo_Lockups/horizontal-charcoal-minimal.svg?url';
+import nightBrandLogo from '../../../shared/ByTab_Brand_Kit_v1.0/02_Logo_Lockups/horizontal-white-minimal.svg?url';
 import HomeIcon from './HomeIcon.vue';
 
 withDefaults(defineProps<{ bookmarksUnavailable?: boolean; linkComponent?: Component; showTagline?: boolean }>(), {
@@ -14,6 +15,7 @@ defineEmits<{ settings: [] }>();
     <component :is="linkComponent ?? 'div'" class="home-brand-lockup" :to="linkComponent ? '/' : undefined">
       <h1 class="home-brand-heading">
         <img class="home-brand-logo" :src="brandLogo" alt="bytab" />
+        <img class="home-brand-logo home-brand-logo--night" :src="nightBrandLogo" alt="bytab" />
       </h1>
       <template v-if="showTagline">
         <span class="home-brand-divider" aria-hidden="true" />

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { dockPositions, themePreferences, type DockPosition, type GlassMode, type ThemePreference } from '../../utils/appearance';
 import defaultWallpaper from '../../assets/wallpapers/default.png';
+import darkWallpaper from '../../assets/wallpapers/dark.webp';
 import HomeDialog from './HomeDialog.vue';
 
 defineProps<{
   theme: ThemePreference;
+  effectiveTheme: GlassMode;
   themeError: string;
   glassTints: Record<GlassMode, number>;
   tintError: string;
@@ -77,7 +79,7 @@ function onFile(event: Event) {
       <p v-if="tintError" class="dialog-feedback" role="alert">{{ tintError }}</p>
     </fieldset>
     <h3 class="appearance-background-title">Background</h3>
-    <img class="background-preview" :src="previewUrl || defaultWallpaper" alt="Background preview" />
+    <img class="background-preview" :src="previewUrl || (effectiveTheme === 'dark' ? darkWallpaper : defaultWallpaper)" alt="Background preview" />
     <div class="background-options">
       <button class="dialog-button" type="button" :disabled="saving || preparing" @click="emit('default')">Use default background</button>
       <label class="dialog-button background-upload" :aria-disabled="saving || preparing">

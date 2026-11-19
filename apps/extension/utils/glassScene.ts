@@ -44,7 +44,7 @@ export async function loadGlassWallpaper(backgroundImage: string): Promise<Wallp
   }
 }
 
-export function sampleGlassWallpaper(wallpaper: Wallpaper, background: DOMRectReadOnly, surface: DOMRectReadOnly): GlassSamples {
+export function sampleGlassWallpaper(wallpaper: Wallpaper, background: DOMRectReadOnly, surface: DOMRectReadOnly, whiteWash: boolean): GlassSamples {
   const scale = Math.max(background.width / wallpaper.width, background.height / wallpaper.height);
   const left = background.left + (background.width - wallpaper.width * scale) / 2;
   const top = background.top + (background.height - wallpaper.height * scale) / 2;
@@ -56,10 +56,10 @@ export function sampleGlassWallpaper(wallpaper: Wallpaper, background: DOMRectRe
       const sourceY = Math.min(wallpaper.height - 1, Math.floor(Math.max(0, (y - top) / scale)));
       const fraction = unit((y - background.top) / background.height);
       const gradient = fraction < 0.5 ? 0.3 * (1 - 2 * fraction) : 0.4 * (2 * fraction - 1);
-      const wash = 0.1 + 0.9 * gradient;
+      const wash = whiteWash ? 0.1 + 0.9 * gradient : 0;
 
-      // Match the two white overlays on .home-background. Transparent wallpaper
-      // pixels show its #cbcbcb base before either overlay is applied.
+      // Match the light and custom wallpaper overlays. Transparent custom
+      // wallpaper shows its #cbcbcb base beneath them.
       const blend = (channel: number, alpha: number) =>
         wash + (1 - wash) * (channel * alpha + 203 * (1 - alpha)) / 255;
       for (let column = 0; column < columns; column++) {

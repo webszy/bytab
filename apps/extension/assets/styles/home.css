@@ -48,6 +48,21 @@
   background: linear-gradient(to bottom, rgb(255 255 255 / 30%), transparent, rgb(255 255 255 / 40%));
 }
 
+.home-page[data-theme='dark']:not([data-custom-wallpaper]) {
+  --home-wallpaper: url('../wallpapers/dark.webp');
+  --home-night-ink: #f5f8ff;
+  --home-night-shadow: 0 1px 8px rgb(0 0 0 / 72%);
+}
+
+.home-page[data-theme='dark']:not([data-custom-wallpaper]) .home-background {
+  background-color: #06152d;
+}
+
+.home-page[data-theme='dark']:not([data-custom-wallpaper]) .home-background::before,
+.home-page[data-theme='dark']:not([data-custom-wallpaper]) .home-background::after {
+  display: none;
+}
+
 .home-icon {
   display: block;
   width: 1em;
@@ -111,6 +126,15 @@
   display: block;
   width: auto;
   height: 36px;
+}
+
+.home-brand-logo--night,
+.home-page[data-theme='dark']:not([data-custom-wallpaper]) .home-brand-logo:not(.home-brand-logo--night) {
+  display: none;
+}
+
+.home-page[data-theme='dark']:not([data-custom-wallpaper]) .home-brand-logo--night {
+  display: block;
 }
 
 .home-brand-tagline {
@@ -221,6 +245,15 @@
 .home-holiday .home-icon {
   width: 14px;
   height: 14px;
+}
+
+.home-page[data-theme='dark']:not([data-custom-wallpaper]) :is(.home-time, .home-date, .home-holiday, .home-brand-tagline, .home-bookmark-status) {
+  color: var(--home-night-ink);
+  text-shadow: var(--home-night-shadow);
+}
+
+.home-page[data-theme='dark']:not([data-custom-wallpaper]) .home-brand-divider {
+  background: rgb(255 255 255 / 30%);
 }
 
 .home-recent {

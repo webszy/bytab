@@ -144,7 +144,7 @@ export function useHomepageGlass(root: Readonly<Ref<HTMLElement | null>>) {
         const inkId = dockUnderDialog ? dialogDockInkId : part.id;
         const previousInk = lastInks.get(inkId);
         const samples = wallpaper && bounds.width && bounds.height && rect.width && rect.height
-          ? sampleGlassWallpaper(wallpaper, bounds, rect, dockUnderDialog)
+          ? sampleGlassWallpaper(wallpaper, bounds, rect, dockUnderDialog, !dark)
           : null;
         const material = samples ? glassMaterial(samples, dark, previousInk, part.rowHighlight) : undefined;
         const ink = material?.ink ?? (wallpaper === undefined ? previousInk : undefined);

@@ -116,7 +116,8 @@ async function alignShortcut() {
 </script>
 
 <template>
-  <div ref="homepage" class="home-page extension-home" :data-theme="effectiveTheme" :data-dock-position="dockPosition" :style="homepageStyle">
+  <div ref="homepage" class="home-page extension-home" :data-theme="effectiveTheme"
+    :data-custom-wallpaper="activeUrl ? '' : undefined" :data-dock-position="dockPosition" :style="homepageStyle">
     <div class="home-background" aria-hidden="true" />
     <HomeTopBar :bookmarks-unavailable="!!bookmarksError" @settings="openSettings" />
     <div id="home-shortcut-layer" class="shortcut-layout" />
@@ -169,6 +170,7 @@ async function alignShortcut() {
     <BackgroundSettings
       v-if="settingsOpen"
       :theme="theme"
+      :effective-theme="effectiveTheme"
       :theme-error="themeError"
       @theme="background.setTheme"
       :dock-position="dockPosition"

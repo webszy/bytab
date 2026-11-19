@@ -34,9 +34,10 @@
 
 .homepage-tagline {
   margin: 0;
-  color: var(--glass-secondary-ink);
+  color: var(--home-night-ink, var(--glass-secondary-ink));
   font-weight: 500;
   text-align: center;
+  text-shadow: var(--home-night-shadow, none);
 }
 
 .chrome-install {
