@@ -104,7 +104,7 @@ pnpm --filter ./apps/web typecheck
 在 `apps/web/.env` 中配置 `.env.example` 所列的可选项：
 
 - `NUXT_PUBLIC_SITE_URL`：生产站点 origin。Cloudflare 生产环境由 `apps/web/wrangler.jsonc` 设为 `https://bytab.dev`。本地未配置时，SSR canonical、OG URL、`/sitemap.xml` 和 `/robots.txt` 使用实际请求 origin。每个功能的 canonical 指向自己的路径。
-- `NUXT_PUBLIC_CHROME_WEB_STORE_URL`：真实 Chrome Web Store 链接。为空时，Add to Chrome 按钮保留未接入状态。
+- `NUXT_PUBLIC_CHROME_WEB_STORE_URL` 可覆盖官网默认的 bytab Chrome Web Store 商品页链接。
 
 每页通过 `useSeoMeta` 输出独立 title、description、OG 和 Twitter Card；canonical 使用 `useHead` 输出。`/sitemap.xml` 包含首页及五个功能页面。Cloudflare Workers 提供 Nuxt/Nitro SSR 和静态资源，在功能页直接打开和刷新时也能返回完整 HTML。
 
@@ -133,7 +133,7 @@ pnpm --filter ./apps/web typecheck
 
 ## Deployment
 
-- Extension：未来通过 Chrome Web Store 分发，使用扩展自己的生产构建和 ZIP。
+- 扩展通过 Chrome Web Store 分发，使用扩展自己的生产构建和 ZIP。
 - 官网部署到 Cloudflare Workers 的 `bytab-web`，生产域名为 `bytab.dev`。`apps/web/wrangler.jsonc` 声明域名、静态资源目录和 Nitro 的 Cloudflare 构建命令。
 
 使用 Wrangler 4.125.0 登录 Cloudflare 后，从仓库根目录运行：

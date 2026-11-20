@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url';
+import { chromeWebStoreListingUrl } from './shared/site';
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-11-09',
@@ -14,7 +15,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       siteUrl: '',
-      chromeWebStoreUrl: '',
+      chromeWebStoreUrl: chromeWebStoreListingUrl,
     },
   },
   app: {

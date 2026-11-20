@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import { homepageSeo, legalDocuments, resolveChromeWebStoreUrl, resolveSiteOrigin, siteFeatures, sitePaths, supportPage } from '../shared/site.ts';
+import { chromeWebStoreListingUrl, homepageSeo, legalDocuments, resolveChromeWebStoreUrl, resolveSiteOrigin, siteFeatures, sitePaths, supportPage } from '../shared/site.ts';
 
 // Run against a running Nuxt dev or production server; no browser or extra
 // dependency is needed. An HTTP fetch verifies the actual server-rendered HTML.
 const base = new URL(process.env.BYTAB_TEST_BASE_URL || 'http://localhost:3001');
 const origin = resolveSiteOrigin(process.env.NUXT_PUBLIC_SITE_URL || '', base.origin);
+const storeUrl = resolveChromeWebStoreUrl(process.env.NUXT_PUBLIC_CHROME_WEB_STORE_URL ?? chromeWebStoreListingUrl);
 const featureSheets = {
   '/features/chrome-bookmarks': {
     hero: 'Your Bookmarks, Reimagined',
@@ -95,11 +96,14 @@ for (const page of pages) {
     assert.ok(html.includes('Start your day. Start with bytab.'), `${page.path}: homepage tagline`);
     assert.ok(!html.includes('class="home-recent"'), `${page.path}: recent page previews are removed`);
     const installLink = (html.match(/<a\b[^>]*>/g) || []).find(tag => attribute(tag, 'class') === 'chrome-install');
-    if (installLink) {
+    if (storeUrl) {
+      assert.ok(installLink, `${page.path}: Add to Chrome link`);
       const href = attribute(installLink, 'href');
-      assert.ok(href && resolveChromeWebStoreUrl(href) === href, `${page.path}: official store listing`);
+      assert.equal(href, storeUrl, `${page.path}: official store listing`);
+      assert.deepEqual(new URL(href).searchParams.getAll('utm_source'), ['bytab.dev'], `${page.path}: install attribution`);
       assert.equal(attribute(installLink, 'target'), '_blank');
     } else {
+      assert.equal(installLink, undefined, `${page.path}: no install link for an invalid store URL`);
       assert.match(html, /<button\b(?=[^>]*class="chrome-install")(?=[^>]*\bdisabled)[^>]*>Coming Soon<\/button>/);
     }
     assert.ok(html.includes('Ask anything...') && html.includes('aria-haspopup="dialog"') && text.includes('This website is a preview only.'));
@@ -153,6 +157,7 @@ for (const page of pages) {
     }
     assert.ok(html.includes('href="mailto:szyszylife@gmail.com?subject=bytab%20Support%20%E2%80%94%20"'));
     assert.ok(html.includes('href="/privacy"') && html.includes('href="/terms"'), 'Support links to Privacy and Terms');
+    if (storeUrl) assert.ok(html.includes(`href="${storeUrl}"`), 'Support links to the official store listing');
     assert.ok(!/noindex/i.test(metadata(html, 'robots') ?? ''), 'Support is indexable');
   } else {
     assert.ok(!html.includes('role="dialog"'), 'Homepage has no open dialog');

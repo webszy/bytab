@@ -16,6 +16,8 @@ export const homepageSeo = {
   description: 'A beautiful, privacy-friendly new tab for Chrome. Keep your bookmarks and favorite websites within easy reach. Local-first · No bookmark uploads.',
 };
 
+export const chromeWebStoreListingUrl = 'https://chromewebstore.google.com/detail/gmgcnhgflkdegdabnipjpehidkpeacbd';
+
 export const siteFeatures = [
   {
     id: 'bookmarks', label: 'Bookmarks', icon: 'bookmark',
@@ -107,7 +109,7 @@ export function resolveChromeWebStoreUrl(value: string): string | undefined {
   const url = new URL(value);
   if (url.origin !== 'https://chromewebstore.google.com' || url.username || url.password) return;
   if (!/^\/detail\/(?:[^/]+\/)?[a-p]{32}\/?$/.test(url.pathname)) return;
-  return url.origin + url.pathname;
+  return `${url.origin}${url.pathname}?utm_source=bytab.dev`;
 }
 
 export function resolveSiteOrigin(configuredUrl: string, requestOrigin: string): string {
