@@ -6,14 +6,13 @@ export interface SiteFeature {
   icon: SiteIconName;
   path: string;
   title: string;
-  description: string;
   seoTitle: string;
   seoDescription: string;
 }
 
 export const homepageSeo = {
-  title: 'bytab — A Beautiful, Private Chrome New Tab',
-  description: 'A beautiful, privacy-friendly new tab for Chrome. Keep your bookmarks and favorite websites within easy reach. Local-first · No bookmark uploads.',
+  title: 'bytab — Liquid Glass New Tab & Chrome Bookmarks',
+  description: 'Turn your Chrome bookmarks into a beautiful liquid glass new tab. Search saved pages, organize shortcuts, and open AI tools. Local-first, free, no account needed.',
 };
 
 export const chromeWebStoreListingUrl = 'https://chromewebstore.google.com/detail/gmgcnhgflkdegdabnipjpehidkpeacbd';
@@ -23,41 +22,36 @@ export const siteFeatures = [
     id: 'bookmarks', label: 'Bookmarks', icon: 'bookmark',
     path: '/features/chrome-bookmarks',
     title: 'Native Chrome Bookmarks',
-    description: 'Everything you\'ve saved. One beautiful place.',
-    seoTitle: 'Your Bookmarks, Reimagined — bytab',
-    seoDescription: 'See your existing Chrome bookmarks in one local new tab. Search saved pages without uploading bookmarks to bytab servers.',
+    seoTitle: 'Chrome Bookmarks New Tab & Local Search | bytab',
+    seoDescription: 'Browse and search your existing Chrome bookmarks from a beautiful new tab. No importing, no bookmark uploads, and no account needed.',
   },
   {
     id: 'dock', label: 'Dock', icon: 'dock',
     path: '/features/bookmark-dock',
     title: 'Bookmark Dock',
-    description: 'A simpler way to move through your day.',
-    seoTitle: 'Everything Within Reach — bytab',
-    seoDescription: 'A calmer dock for the places you use. Keep important destinations close in a clean Chrome new tab.',
+    seoTitle: 'Custom New Tab Shortcuts & Dock for Chrome | bytab',
+    seoDescription: 'Keep your favorite websites within reach with customizable Chrome new tab shortcuts, folders, and a movable liquid glass dock.',
   },
   {
     id: 'search', label: 'Search', icon: 'search',
     path: '/features/search-launcher',
     title: 'Search & Quick Launch',
-    description: 'One starting point. More possibilities.',
-    seoTitle: 'Search. Ask. Go. — bytab',
-    seoDescription: 'Search saved bookmarks, open Google or Bing, or take a prompt to the AI destination you choose. bytab does not run the model.',
+    seoTitle: 'AI Prompt Bar & Quick Search for Chrome | bytab',
+    seoDescription: 'Launch ChatGPT, Claude, Grok, Gemini, Google, or Bing from your Chrome new tab. Send prompts directly to the service you choose.',
   },
   {
     id: 'appearance', label: 'Appearance', icon: 'settings',
     path: '/features/customize-new-tab',
     title: 'Personalize Your New Tab',
-    description: 'Your browser. Your space.',
-    seoTitle: 'Make It Yours — bytab',
-    seoDescription: 'A personal Chrome new tab with light, dark, or system appearance, the default background or your own image, and a dock on any edge.',
+    seoTitle: 'Liquid Glass New Tab Themes & Wallpapers | bytab',
+    seoDescription: 'Personalize your Chrome new tab with liquid glass styling, custom wallpapers, light and dark themes, and flexible dock positioning.',
   },
   {
     id: 'privacy', label: 'Privacy', icon: 'shield',
     path: '/features/privacy',
     title: 'Local-first Privacy',
-    description: 'Your bookmarks belong to you.',
-    seoTitle: 'Private by Design — bytab',
-    seoDescription: 'Chrome bookmarks stay in your browser and are not uploaded to bytab. Prompts you submit go to the third-party service you choose.',
+    seoTitle: 'Private Chrome New Tab with Local Bookmarks | bytab',
+    seoDescription: 'Your Chrome bookmarks, shortcuts, and wallpapers stay in your browser. No bookmark uploads, no account, and transparent third-party AI routing.',
   },
 ] as const satisfies readonly SiteFeature[];
 
@@ -74,23 +68,23 @@ export const legalDocuments = [
     id: 'privacy-policy',
     path: '/privacy',
     title: 'Privacy Policy',
-    seoTitle: 'Privacy Policy — bytab',
-    seoDescription: 'How bytab version 0.0.1 handles Chrome bookmarks, local settings, prompts, Gemini site access, and bytab.dev technical logs.',
+    seoTitle: 'Privacy Policy — Local-first Chrome Extension | bytab',
+    seoDescription: 'Learn how bytab handles Chrome bookmarks, local storage, recent tabs, and prompts sent to third-party AI and search services.',
   },
   {
     id: 'terms',
     path: '/terms',
     title: 'Terms of Use',
-    seoTitle: 'Terms of Use — bytab',
-    seoDescription: 'Terms for the free bytab Chrome extension and bytab.dev, including third-party AI and search destinations. Version 0.0.1 does not charge a fee.',
+    seoTitle: 'Terms of Use — bytab Chrome Extension',
+    seoDescription: 'Read the terms of use for the bytab Chrome new tab extension and website, including permitted use and third-party services.',
   },
 ] as const satisfies readonly LegalDocument[];
 
 export const supportPage = {
   path: '/support',
   title: 'Support',
-  seoTitle: 'Support & FAQ — bytab',
-  seoDescription: 'Get help with bytab for Chrome. Find answers about bookmarks, shortcuts, privacy, customization, and troubleshooting.',
+  seoTitle: 'bytab Support & FAQ — Chrome New Tab Help',
+  seoDescription: 'Get help with bytab for Chrome. Learn how to use bookmarks, local search, shortcuts, wallpapers, the Prompt Bar, and privacy settings.',
 } as const;
 
 export const sitePaths = [

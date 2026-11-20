@@ -5,7 +5,7 @@ import HolidayInfo from '#extension-home/HolidayInfo.vue';
 import ShortcutsPanel from '#extension-home/ShortcutsPanel.vue';
 import { resolveChromeWebStoreUrl } from '#shared/site';
 
-const props = defineProps<{ tooltipBlocked: boolean }>();
+const props = defineProps<{ showPageHeading: boolean; tooltipBlocked: boolean }>();
 const { time, date, holiday } = useClock();
 const storeUrl = resolveChromeWebStoreUrl(useRuntimeConfig().public.chromeWebStoreUrl);
 type Tooltip = 'prompt' | 'shortcuts';
@@ -61,12 +61,17 @@ watch(() => activeTooltip.value !== null, (open, _, onCleanup) => {
 <template>
   <HomeClock :time="time" :date="date" />
   <HolidayInfo :label="holiday" confirmed />
-  <div class="homepage-install-row">
-    <p class="homepage-tagline">Start your day. Start with bytab.</p>
-    <a v-if="storeUrl" class="chrome-install" :href="storeUrl" target="_blank" rel="noopener noreferrer">
-      Add to Chrome <span aria-hidden="true">↗</span>
-    </a>
-    <button v-else class="chrome-install" type="button" disabled aria-label="Chrome extension coming soon">Coming Soon</button>
+  <div class="homepage-intro">
+    <component :is="showPageHeading ? 'h1' : 'p'" class="homepage-tagline">Chrome for browsing. bytab for bookmarks.</component>
+    <p class="homepage-summary">
+      A liquid glass new tab for the Chrome bookmarks you already have. Browse saved pages, search locally, organize your favorite shortcuts, and jump into your preferred AI or search tool.
+    </p>
+    <div class="homepage-install-row">
+      <a v-if="storeUrl" class="chrome-install" :href="storeUrl" target="_blank" rel="noopener noreferrer">
+        Add to Chrome — Free <span aria-hidden="true">↗</span>
+      </a>
+      <p class="homepage-install-note">Local-first · No bookmark uploads · No account needed</p>
+    </div>
   </div>
   <PromptPreview
     :button-id="triggerIds.prompt"

@@ -18,7 +18,7 @@ function close() {
     class="feature-layer"
     :open="Boolean(feature)"
     :title="feature?.title"
-    :description="feature?.description"
+    description-id="feature-summary"
     :return-focus-id="feature ? `dock-${feature.id}` : undefined"
     keep-mounted
     @close="close"

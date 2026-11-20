@@ -45,22 +45,40 @@
   z-index: auto;
 }
 
+.homepage-intro {
+  width: min(100%, 35rem);
+  margin-bottom: 18px;
+  color: var(--home-night-ink, #1f2329);
+  text-align: center;
+  text-shadow: var(--home-night-shadow, 0 1px 8px rgb(255 255 255 / 80%));
+}
+
+.homepage-tagline {
+  margin: 0;
+  font-size: clamp(15px, 2.5vw, 19px);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.homepage-summary {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
 .homepage-install-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 8px 14px;
-  max-width: 100%;
-  margin: 0 0 18px;
+  margin-top: 10px;
 }
 
-.homepage-tagline {
+.homepage-install-note {
   margin: 0;
-  color: var(--home-night-ink, var(--glass-secondary-ink));
-  font-weight: 500;
-  text-align: center;
-  text-shadow: var(--home-night-shadow, none);
+  font-size: 12px;
 }
 
 .chrome-install {
@@ -68,20 +86,36 @@
   align-items: center;
   gap: 5px;
   padding: 5px 11px;
-  border: 1px solid rgb(255 255 255 / 60%);
+  border: 1px solid light-dark(rgb(255 255 255 / 60%), rgb(255 255 255 / 32%));
   border-radius: 999px;
-  background: rgb(250 250 252 / 76%);
-  box-shadow: inset 0 1px 0 #ffffff75, 0 2px 6px #00000015;
-  color: #36383d;
+  background: light-dark(rgb(250 250 252 / 76%), rgb(15 22 38 / 68%));
+  box-shadow: inset 0 1px 0 light-dark(#ffffff75, #ffffff24), 0 2px 6px #00000015;
+  color: light-dark(#36383d, #f5f8ff);
   font: 600 12px/1.25 system-ui, sans-serif;
   text-decoration: none;
+  text-shadow: none;
 }
 
-a.chrome-install:hover { background: rgb(255 255 255 / 94%); }
-.chrome-install:focus-visible { outline: 2px solid #0071e3; outline-offset: 3px; }
-.chrome-install:disabled { cursor: default; }
+.chrome-install:hover { background: light-dark(rgb(255 255 255 / 94%), rgb(15 22 38 / 90%)); }
+.home-page .chrome-install:focus-visible { outline-color: light-dark(#0071e3, #8fc4ff); }
 @media (max-width: 520px) {
   .homepage-install-row { flex-direction: column; }
+}
+
+@media (max-width: 520px) and (max-height: 600px) {
+  .website-home[data-dock-position] .home-main { padding: 6px 12px; }
+  .website-home .home-time { font-size: 36px; }
+  .website-home .home-date { margin-top: 4px; font-size: 14px; line-height: 1.3; }
+  .website-home .home-datetime:not(:has(+ .home-holiday)) { margin-bottom: 8px; }
+  .website-home .home-holiday { margin-block: 4px 6px; font-size: 12px; }
+  .homepage-intro,
+  .website-home .home-prompt { margin-bottom: 7px; }
+  .homepage-summary { font-size: 12px; line-height: 1.4; }
+  .homepage-install-row { gap: 5px; margin-top: 8px; }
+  .homepage-install-note { font-size: 11px; line-height: 1.35; letter-spacing: -0.01em; }
+  .website-home .home-shortcuts { padding-block: 8px; }
+  .website-home .shortcuts-header { margin-bottom: 6px; }
+  .website-home .shortcut-tile { width: 44px; height: 44px; }
 }
 
 .website-home .home-bottom-buffer,

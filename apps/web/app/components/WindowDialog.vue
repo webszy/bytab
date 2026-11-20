@@ -4,6 +4,7 @@ const props = withDefaults(defineProps<{
   open: boolean;
   title?: string;
   description?: string;
+  descriptionId?: string;
   keepMounted?: boolean;
   returnFocusId?: string;
   restoreFocus?: boolean;
@@ -73,7 +74,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown, true));
     :role="open ? 'dialog' : undefined"
     :aria-modal="open ? true : undefined"
     :aria-labelledby="open ? titleId : undefined"
-    :aria-describedby="open && description ? summaryId : undefined"
+    :aria-describedby="open ? (descriptionId ?? (description ? summaryId : undefined)) : undefined"
   >
     <Transition name="window-dialog" @before-leave="element => element.setAttribute('inert', '')">
       <div
@@ -94,7 +95,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown, true));
               <span class="window-dot window-dot--yellow" aria-hidden="true" />
               <span class="window-dot window-dot--green" aria-hidden="true" />
             </div>
-            <h2 :id="titleId">{{ title }}</h2>
+            <p :id="titleId" class="window-title">{{ title }}</p>
             <p v-if="description" :id="summaryId" hidden>{{ description }}</p>
           </header>
           <div class="window-dialog-body"><slot /></div>
@@ -177,7 +178,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown, true));
   background: var(--window-titlebar);
 }
 
-.window-titlebar h2 {
+.window-title {
   margin: 0;
   padding-block: 8px;
   font-size: 13px;
@@ -250,7 +251,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown, true));
   }
   .window-dialog-panel { border-radius: 14px; }
   .window-titlebar { padding-inline: 10px; }
-  .window-titlebar h2 { font-size: 12px; }
+  .window-title { font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: no-preference) {

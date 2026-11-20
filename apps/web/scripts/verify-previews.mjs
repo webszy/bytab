@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict';
-import { siteFeatures } from '../shared/site.ts';
+import { findFeatureContent } from '../shared/feature-content.ts';
+import { chromeWebStoreListingUrl, homepageSeo, resolveChromeWebStoreUrl, resolveSiteOrigin, siteFeatures } from '../shared/site.ts';
 
 const { chromium } = await import(process.env.BYTAB_PLAYWRIGHT_MODULE || 'playwright');
 const base = new URL(process.env.BYTAB_TEST_BASE_URL || 'http://localhost:3001');
 const home = new URL('/', base).href;
+const origin = resolveSiteOrigin(process.env.NUXT_PUBLIC_SITE_URL || '', base.origin);
+const storeUrl = resolveChromeWebStoreUrl(process.env.NUXT_PUBLIC_CHROME_WEB_STORE_URL ?? chromeWebStoreListingUrl);
+const tagline = 'Chrome for browsing. bytab for bookmarks.';
 const browser = await chromium.launch({
   ...(process.env.BYTAB_CHROMIUM_EXECUTABLE ? { executablePath: process.env.BYTAB_CHROMIUM_EXECUTABLE } : { channel: 'chromium' }),
 });
@@ -14,12 +18,28 @@ try {
   page.setDefaultTimeout(5000);
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => {
+    if (['warning', 'error'].includes(message.type()) && /hydrat/i.test(message.text())) errors.push(message.text());
+  });
   const prompt = page.locator('#intro-prompt');
   const shortcuts = page.locator('#intro-shortcuts');
   const popups = page.locator('.preview-tooltip:visible');
   const openHome = async () => {
     await page.goto(home);
     await page.waitForFunction(() => /\d/.test(document.querySelector('.home-time')?.textContent ?? ''));
+  };
+  const checkSeo = async (path, seoTitle, heading) => {
+    await page.getByRole('heading', { name: heading, level: 1, exact: true }).waitFor();
+    await page.waitForFunction(({ title, canonical, homepage }) => {
+      const links = document.querySelectorAll('link[rel="canonical"]');
+      const schema = document.querySelectorAll('script[type="application/ld+json"]');
+      return document.title === title && links.length === 1 && links[0].href === canonical
+        && document.querySelectorAll('h1').length === 1 && schema.length === Number(homepage);
+    }, { title: seoTitle, canonical: new URL(path, origin).href, homepage: path === '/' });
+  };
+  const checkFeature = async feature => {
+    await page.getByRole('dialog', { name: feature.title, exact: true }).waitFor();
+    await checkSeo(feature.path, feature.seoTitle, findFeatureContent(feature.id).heroTitle);
   };
   const checkOpen = async (active = null) => {
     for (const trigger of [prompt, shortcuts]) {
@@ -37,14 +57,10 @@ try {
   };
 
   await openHome();
-  assert.equal(await page.getByText('Start your day. Start with bytab.', { exact: true }).count(), 1);
-  const install = page.locator('.chrome-install');
-  if (await install.getAttribute('href') === null) {
-    assert.equal(await install.textContent(), 'Coming Soon');
-    assert.ok(await install.isDisabled());
-  } else {
-    assert.match(await install.getAttribute('href'), /^https:\/\/chromewebstore\.google\.com\/detail\//);
-  }
+  await checkSeo('/', homepageSeo.title, tagline);
+  const install = page.getByRole('link', { name: 'Add to Chrome — Free', exact: true });
+  if (storeUrl) assert.equal(await install.getAttribute('href'), storeUrl);
+  else assert.equal(await install.count(), 0);
   assert.equal(await prompt.evaluate(button => button.tagName + ':' + button.type), 'BUTTON:button');
   const placeholder = prompt.locator('.prompt-input');
   assert.equal(await placeholder.evaluate(node => node.tagName + ':' + getComputedStyle(node).cursor), 'SPAN:pointer');
@@ -144,6 +160,9 @@ try {
   const settings = page.getByRole('dialog', { name: 'Appearance' });
   assert.ok(await settings.isVisible());
   await checkOpen();
+  await settings.getByRole('radio', { name: 'Dark', exact: true }).check();
+  await page.waitForFunction(() => document.querySelector('.website-home')?.dataset.theme === 'dark');
+  await settings.getByRole('radio', { name: 'System', exact: true }).check();
   await settings.getByRole('button', { name: 'Close', exact: true }).click();
 
   for (const feature of siteFeatures) {
@@ -152,17 +171,64 @@ try {
     assert.equal(await dockLink.getAttribute('href'), feature.path);
     await dockLink.click();
     await page.waitForURL(new URL(feature.path, base).href);
-    await page.getByRole('dialog', { name: feature.title, exact: true }).waitFor();
+    await checkFeature(feature);
     await checkOpen();
     await page.getByRole('button', { name: 'Close window' }).click();
     await page.waitForURL(home);
+    await checkSeo('/', homepageSeo.title, tagline);
   }
-  await page.goto(new URL(siteFeatures[0].path, base).href);
-  await page.getByRole('dialog', { name: siteFeatures[0].title, exact: true }).waitFor();
-  await checkOpen();
-  console.log('PASS Settings and all five URL-driven Dock windows');
+  for (const feature of siteFeatures) {
+    await page.goto(new URL(`${feature.path}?source=check#fragment`, base).href);
+    await checkFeature(feature);
+    await page.reload();
+    await checkFeature(feature);
+  }
+  await page.getByRole('button', { name: 'Close window' }).click();
+  await page.waitForURL(home);
+  await checkSeo('/', homepageSeo.title, tagline);
 
-  await page.setViewportSize({ width: 375, height: 900 });
+  const [firstFeature, secondFeature] = siteFeatures;
+  await page.locator(`#dock-${firstFeature.id}`).click();
+  await checkFeature(firstFeature);
+  await page.locator(`#dock-${secondFeature.id}`).click();
+  await checkFeature(secondFeature);
+  await page.goBack();
+  await checkFeature(firstFeature);
+  await page.goBack();
+  await page.waitForURL(home);
+  await checkSeo('/', homepageSeo.title, tagline);
+  await page.goForward();
+  await checkFeature(firstFeature);
+  await page.goForward();
+  await checkFeature(secondFeature);
+  await page.keyboard.press('Escape');
+  await page.waitForURL(home);
+  await checkSeo('/', homepageSeo.title, tagline);
+  console.log('PASS all five Dock windows: direct entry, refresh, close, Back/Forward, H1, and client-side SEO');
+
+  for (const viewport of [{ width: 1280, height: 800 }, { width: 375, height: 667 }]) {
+    await page.setViewportSize(viewport);
+    for (const theme of ['light', 'dark']) {
+      await page.emulateMedia({ colorScheme: theme });
+      await openHome();
+      await page.waitForFunction(expected => document.querySelector('.website-home')?.dataset.theme === expected, theme);
+      await page.waitForFunction(() => {
+        const dockTop = document.querySelector('.site-dock').getBoundingClientRect().top;
+        return document.documentElement.scrollWidth <= innerWidth
+          && [...document.querySelectorAll('.homepage-intro, .prompt-preview, .intro-hotspot--shortcuts')]
+            .every(element => element.getBoundingClientRect().bottom <= dockTop);
+      });
+      const privacy = siteFeatures.find(feature => feature.id === 'privacy');
+      await page.locator('#dock-privacy').click();
+      await checkFeature(privacy);
+      const panel = await page.locator('.window-dialog-panel').boundingBox();
+      assert.ok(panel && panel.x >= 0 && panel.y >= 0 && panel.x + panel.width <= viewport.width);
+      await page.getByRole('link', { name: 'Read Privacy Policy', exact: true }).click();
+      await page.waitForURL(new URL('/privacy', base).href);
+    }
+  }
+  console.log('PASS desktop and mobile layouts in light and dark themes, plus legal navigation');
+
   await openHome();
   await shortcuts.click();
   await prompt.click();
@@ -187,7 +253,7 @@ try {
     await page.getByRole('heading', { name: title, exact: true, level: 1 }).waitFor();
   }
   assert.deepEqual(errors, []);
-  console.log('PASS narrow layout: preview switching, original shortcut icons and links, and independent pages');
+  console.log('PASS narrow layout: preview switching, shortcut navigation, and independent pages without hydration errors');
 } finally {
   await browser.close();
 }

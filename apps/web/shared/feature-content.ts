@@ -1,4 +1,4 @@
-import { siteFeatures } from './site';
+import type { siteFeatures } from './site';
 
 export type FeatureGlyph = 'bookmark' | 'search' | 'shield' | 'dock' | 'sparkle' | 'globe' | 'settings' | 'folder';
 
@@ -27,92 +27,92 @@ type FeatureId = typeof siteFeatures[number]['id'];
 
 export const featureContent = {
   bookmarks: {
-    heroTitle: 'Your Bookmarks, Reimagined',
-    heroSubtitle: 'Everything you\'ve saved. One beautiful place.',
+    heroTitle: 'Chrome Bookmarks on Your New Tab',
+    heroSubtitle: 'Open a new tab and browse the Chrome bookmarks you already have, with your existing folders ready to use.',
     modules: [
       {
         icon: 'bookmark',
-        title: 'All Your Bookmarks',
-        description: 'Your existing Chrome bookmarks, right where you need them.',
+        title: 'Browse Bookmark Folders',
+        description: 'Explore your saved pages in All Bookmarks or open your Chrome folders from the Dock.',
       },
       {
         icon: 'search',
-        title: 'Find Things Faster',
-        description: 'Quickly search and revisit the pages you\'ve saved.',
+        title: 'Instant Local Search',
+        description: 'Type part of a page title or URL to find a matching bookmark in your browser.',
       },
       {
         icon: 'shield',
-        title: 'Local by Design',
-        description: 'Your bookmarks stay in your browser, not on bytab servers.',
+        title: 'Start Without Importing',
+        description: 'bytab reads your existing bookmark tree locally, with no importing, bookmark uploads, or bytab account required.',
       },
     ],
-    tags: ['Chrome Native', 'Local-first', 'No Bookmark Uploads'],
+    tags: ['Chrome Bookmarks', 'Local-first', 'No Account Needed'],
   },
   dock: {
-    heroTitle: 'Everything Within Reach',
-    heroSubtitle: 'A simpler way to move through your day.',
+    heroTitle: 'Custom Shortcuts and Bookmark Dock',
+    heroSubtitle: 'Keep frequently used websites in the shortcut bar and reach your Chrome bookmark folders from a liquid glass Dock.',
     modules: [
       {
         icon: 'dock',
-        title: 'Always Close',
-        description: 'Your important destinations stay easy to reach.',
-      },
-      {
-        icon: 'sparkle',
-        title: 'Less Clutter',
-        description: 'A clean, familiar interface that lets your space breathe.',
+        title: 'Add Everyday Websites',
+        description: 'Add shortcuts for the sites you visit often and arrange them in the order you use them.',
       },
       {
         icon: 'folder',
-        title: 'Made for Your Flow',
-        description: 'Keep your browsing experience simple and comfortable.',
+        title: 'Group Related Shortcuts',
+        description: 'Use shortcut folders to keep work, reading, or other related websites together.',
+      },
+      {
+        icon: 'settings',
+        title: 'Choose a Dock Position',
+        description: 'Place the Dock at the top, bottom, left, or right edge of your new tab in Settings.',
       },
     ],
-    tags: ['Simple', 'Accessible', 'Organized'],
+    tags: ['Website Shortcuts', 'Shortcut Folders', 'Four Dock Positions'],
   },
   search: {
-    heroTitle: 'Search. Ask. Go.',
-    heroSubtitle: 'One starting point. More possibilities.',
+    heroTitle: 'AI Prompt Bar and Quick Search',
+    heroSubtitle: 'Choose an AI or search service in the Prompt Bar. bytab opens that service, which processes your request and runs any AI models.',
     modules: [
       {
         icon: 'bookmark',
-        title: 'Find Your Bookmarks',
-        description: 'Search the pages you\'ve already saved.',
+        title: 'Open a Saved Page',
+        description: 'Type a title or URL to find a Chrome bookmark locally and open it from the same bar.',
       },
       {
         icon: 'globe',
         title: 'Search the Web',
-        description: 'Get to the information you need with less friction.',
+        description: 'Choose Google or Bing to open search results for your query in a new tab.',
       },
       {
         icon: 'sparkle',
-        title: 'Jump Into AI',
-        description: 'Take your prompt to your selected AI destination.',
+        title: 'Launch a Third-party AI Tool',
+        description: 'Open ChatGPT, Claude, Grok, or Gemini. Gemini autofill uses optional site access. You can paste your prompt when that access is off.',
       },
     ],
     tags: ['Bookmark Search', 'Web Search', 'AI Shortcuts'],
   },
   appearance: {
-    heroTitle: 'Make It Yours',
-    heroSubtitle: 'Your browser. Your space.',
+    heroTitle: 'Liquid Glass Themes and Wallpapers',
+    heroSubtitle: 'Personalize your Chrome new tab with liquid glass styling, your own wallpaper, and a Dock that fits your workspace.',
     modules: [
       {
         icon: 'sparkle',
-        title: 'A Beautiful Beginning',
-        description: 'Enjoy a more personal new tab experience.',
+        title: 'Choose Your Wallpaper',
+        description: 'Use the built-in wallpaper or set an image of your own as the new tab background.',
       },
       {
         icon: 'settings',
-        title: 'Set the Mood',
-        description: 'Choose the appearance that feels right for you.',
+        title: 'Light, Dark, or System',
+        description: 'Pick a light or dark appearance, or let bytab follow your system preference.',
       },
       {
-        icon: 'folder',
-        title: 'Designed for Everyday Use',
-        description: 'A comfortable space you\'ll return to throughout the day.',
+        icon: 'dock',
+        title: 'Customize the Dock',
+        description: 'Choose any of the four screen edges for your Dock in Appearance settings.',
       },
     ],
-    tags: ['Personal', 'Calm', 'Beautiful'],
+    tags: ['Liquid Glass', 'Custom Wallpapers', 'Flexible Dock'],
     linksLabel: 'Policies',
     linksTone: 'quiet',
     links: [
@@ -121,26 +121,26 @@ export const featureContent = {
     ],
   },
   privacy: {
-    heroTitle: 'Private by Design',
-    heroSubtitle: 'Your bookmarks belong to you.',
+    heroTitle: 'Local-first Privacy for Chrome',
+    heroSubtitle: 'bytab reads your Chrome bookmarks on your device. You can use the new tab without creating a bytab account.',
     modules: [
       {
         icon: 'shield',
-        title: 'Local-first',
-        description: 'Your Chrome bookmarks are handled locally.',
-      },
-      {
-        icon: 'bookmark',
         title: 'No Bookmark Uploads',
-        description: 'Your bookmarks aren\'t uploaded to bytab servers.',
+        description: 'Bookmark browsing and search run in your browser using the Chrome bookmarks API. bytab never uploads your bookmarks.',
       },
       {
         icon: 'settings',
-        title: 'You\'re in Control',
-        description: 'Your browser and the third-party services you choose determine where your browsing actions go.',
+        title: 'Browser-local Settings',
+        description: 'Preferences and shortcuts are saved in Chrome local storage. Custom wallpapers are saved in IndexedDB on your device.',
+      },
+      {
+        icon: 'globe',
+        title: 'Third-party Prompt Routing',
+        description: 'When you submit a prompt or search, the third-party service you select processes it under its own privacy policy.',
       },
     ],
-    tags: ['Local-first', 'No Bookmark Uploads', 'Your Choice'],
+    tags: ['Local-first', 'No Bookmark Uploads', 'No Account Needed'],
     linksTone: 'emphasis',
     links: [
       { label: 'Read Privacy Policy', to: '/privacy' },

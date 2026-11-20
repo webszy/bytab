@@ -12,8 +12,8 @@ defineProps<{ feature: SiteFeature; content: FeatureContent }>();
         <SiteIcon :name="feature.icon" />
       </span>
       <div class="feature-hero-copy">
-        <h3>{{ content.heroTitle }}</h3>
-        <p>{{ content.heroSubtitle }}</p>
+        <h1>{{ content.heroTitle }}</h1>
+        <p id="feature-summary">{{ content.heroSubtitle }}</p>
       </div>
     </header>
     <ol class="feature-modules">
@@ -21,7 +21,7 @@ defineProps<{ feature: SiteFeature; content: FeatureContent }>();
         <span class="feature-module-mark">
           <FeatureGlyph :name="module.icon" />
         </span>
-        <h4>{{ module.title }}</h4>
+        <h2>{{ module.title }}</h2>
         <p>{{ module.description }}</p>
       </li>
     </ol>
@@ -108,7 +108,7 @@ defineProps<{ feature: SiteFeature; content: FeatureContent }>();
 
 .feature-hero-copy { min-width: 0; padding-top: 2px; }
 
-.feature-hero h3 {
+.feature-hero h1 {
   margin: 0;
   font-size: clamp(28px, 4vw, 36px);
   font-weight: 600;
@@ -141,7 +141,7 @@ defineProps<{ feature: SiteFeature; content: FeatureContent }>();
   background: color-mix(in srgb, var(--window-surface) 62%, transparent);
 }
 
-.feature-modules h4 {
+.feature-modules h2 {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
@@ -209,8 +209,11 @@ defineProps<{ feature: SiteFeature; content: FeatureContent }>();
 .feature-link--primary:hover { background: #0066cc; }
 .feature-link--secondary:hover { background: color-mix(in srgb, var(--window-ink) 6%, var(--window-surface)); }
 
-@container (max-width: 680px) {
+@media (max-width: 620px) {
   .feature-sheet { padding: 28px 22px 24px; }
+}
+
+@container (max-width: 680px) {
   .feature-hero { gap: 14px; }
   .feature-hero-mark { width: 44px; height: 44px; border-radius: 14px; }
   .feature-modules { grid-template-columns: 1fr; margin-top: 28px; }

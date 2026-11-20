@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { findFeatureContent } from '../shared/feature-content.ts';
 import { chromeWebStoreListingUrl, homepageSeo, legalDocuments, resolveChromeWebStoreUrl, resolveSiteOrigin, siteFeatures, sitePaths, supportPage } from '../shared/site.ts';
 
 // Run against a running Nuxt dev or production server; no browser or extra
@@ -6,45 +7,22 @@ import { chromeWebStoreListingUrl, homepageSeo, legalDocuments, resolveChromeWeb
 const base = new URL(process.env.BYTAB_TEST_BASE_URL || 'http://localhost:3001');
 const origin = resolveSiteOrigin(process.env.NUXT_PUBLIC_SITE_URL || '', base.origin);
 const storeUrl = resolveChromeWebStoreUrl(process.env.NUXT_PUBLIC_CHROME_WEB_STORE_URL ?? chromeWebStoreListingUrl);
-const featureSheets = {
-  '/features/chrome-bookmarks': {
-    hero: 'Your Bookmarks, Reimagined',
-    modules: ['All Your Bookmarks', 'Find Things Faster', 'Local by Design'],
-    tags: ['Chrome Native', 'Local-first', 'No Bookmark Uploads'],
-  },
-  '/features/bookmark-dock': {
-    hero: 'Everything Within Reach',
-    modules: ['Always Close', 'Less Clutter', 'Made for Your Flow'],
-    tags: ['Simple', 'Accessible', 'Organized'],
-  },
-  '/features/search-launcher': {
-    hero: 'Search. Ask. Go.',
-    modules: ['Find Your Bookmarks', 'Search the Web', 'Jump Into AI'],
-    tags: ['Bookmark Search', 'Web Search', 'AI Shortcuts'],
-  },
-  '/features/customize-new-tab': {
-    hero: 'Make It Yours',
-    modules: ['A Beautiful Beginning', 'Set the Mood', 'Designed for Everyday Use'],
-    tags: ['Personal', 'Calm', 'Beautiful'],
-    links: ['Privacy Policy', 'Terms of Use'],
-  },
-  '/features/privacy': {
-    hero: 'Private by Design',
-    modules: ['Local-first', 'No Bookmark Uploads', "You're in Control"],
-    tags: ['Local-first', 'No Bookmark Uploads', 'Your Choice'],
-    links: ['Read Privacy Policy', 'Read Terms of Use'],
-  },
-};
+const tagline = 'Chrome for browsing. bytab for bookmarks.';
+const introduction = 'A liquid glass new tab for the Chrome bookmarks you already have. Browse saved pages, search locally, organize your favorite shortcuts, and jump into your preferred AI or search tool.';
+const privacyNote = 'Local-first · No bookmark uploads · No account needed';
 const pages = [
-  { path: '/', title: homepageSeo.title, description: homepageSeo.description, shell: true },
-  ...siteFeatures.map(feature => ({
-    path: feature.path, title: feature.seoTitle, description: feature.seoDescription,
-    windowTitle: feature.title, shell: true, sheet: featureSheets[feature.path],
-  })),
+  { path: '/', ...homepageSeo, heading: tagline, shell: true },
+  ...siteFeatures.map(feature => {
+    const sheet = findFeatureContent(feature.id);
+    return {
+      path: feature.path, title: feature.seoTitle, description: feature.seoDescription,
+      windowTitle: feature.title, heading: sheet.heroTitle, shell: true, sheet,
+    };
+  }),
   ...legalDocuments.map(document => ({
-    path: document.path, title: document.seoTitle, description: document.seoDescription, legal: true,
+    path: document.path, title: document.seoTitle, description: document.seoDescription, heading: document.title, legal: true,
   })),
-  { path: supportPage.path, title: supportPage.seoTitle, description: supportPage.seoDescription, support: true },
+  { path: supportPage.path, title: supportPage.seoTitle, description: supportPage.seoDescription, heading: supportPage.title, support: true },
 ];
 
 function decode(value = '') {
@@ -59,31 +37,77 @@ function attribute(tag, name) {
 
 function metadata(html, key) {
   const tags = html.match(/<meta\b[^>]*>/g) || [];
-  const tag = tags.find(value => attribute(value, 'name') === key || attribute(value, 'property') === key);
-  return tag ? attribute(tag, 'content') : undefined;
+  const matches = tags.filter(tag => attribute(tag, 'name') === key || attribute(tag, 'property') === key);
+  assert.ok(matches.length <= 1, `At most one ${key} meta tag`);
+  return matches.length ? attribute(matches[0], 'content') : undefined;
+}
+
+function canonicalUrl(html) {
+  const links = (html.match(/<link\b[^>]*>/g) || []).filter(tag => attribute(tag, 'rel') === 'canonical');
+  assert.equal(links.length, 1, 'Exactly one canonical link');
+  return attribute(links[0], 'href');
 }
 
 assert.equal(new Set(pages.map(page => page.title)).size, pages.length, 'SEO titles must be unique');
 assert.equal(new Set(pages.map(page => page.description)).size, pages.length, 'SEO descriptions must be unique');
 const assets = new Set();
+const socialImages = new Set();
 
 for (const page of pages) {
-  const response = await fetch(new URL(page.path, base));
+  const response = await fetch(new URL(page.path, base), { redirect: 'error' });
   assert.equal(response.status, 200, `${page.path}: HTTP status`);
   const html = await response.text();
   const text = decode(html);
   for (const match of html.matchAll(/(?:href|src)="(\/_nuxt\/[^\"]*)"/g)) assets.add(match[1]);
-  assert.equal(decode(html.match(/<title>([^<]*)<\/title>/)?.[1]), page.title, `${page.path}: SSR title`);
+  const titles = [...html.matchAll(/<title>([^<]*)<\/title>/g)].map(match => decode(match[1]));
+  assert.deepEqual(titles, [page.title], `${page.path}: exactly one SSR title`);
+  const headings = [...html.matchAll(/<h1\b[^>]*>([^<]*)<\/h1>/g)].map(match => decode(match[1]));
+  assert.deepEqual(headings, [page.heading], `${page.path}: exactly one SSR H1`);
+  assert.equal(attribute(html.match(/<html\b[^>]*>/)?.[0] || '', 'lang'), 'en', `${page.path}: English document`);
   assert.equal(metadata(html, 'description'), page.description, `${page.path}: SSR description`);
+  const canonical = new URL(page.path, origin).href;
+  assert.equal(canonicalUrl(html), canonical, `${page.path}: SSR canonical`);
+  assert.doesNotMatch([
+    metadata(html, 'robots'), metadata(html, 'googlebot'), response.headers.get('x-robots-tag'),
+  ].join(' '), /\b(?:noindex|none)\b/i, `${page.path}: indexable`);
   assert.equal(metadata(html, 'og:title'), page.title);
   assert.equal(metadata(html, 'og:description'), page.description);
-  assert.equal(metadata(html, 'og:url'), new URL(page.path, origin).href);
-  assert.equal(metadata(html, 'twitter:card'), 'summary');
+  assert.equal(metadata(html, 'og:url'), canonical);
+  assert.equal(metadata(html, 'og:type'), 'website');
+  assert.equal(metadata(html, 'og:site_name'), 'bytab');
+  const socialImage = metadata(html, 'og:image');
+  assert.ok(socialImage, `${page.path}: has an OG image`);
+  assert.equal(new URL(socialImage).origin, origin, `${page.path}: absolute OG image URL`);
+  assert.equal(metadata(html, 'og:image:width'), '1200');
+  assert.equal(metadata(html, 'og:image:height'), '630');
+  socialImages.add(socialImage);
+  assert.equal(metadata(html, 'twitter:card'), 'summary_large_image');
   assert.equal(metadata(html, 'twitter:title'), page.title);
   assert.equal(metadata(html, 'twitter:description'), page.description);
-  const canonical = (html.match(/<link\b[^>]*>/g) || []).filter(tag => attribute(tag, 'rel') === 'canonical');
-  assert.equal(canonical.length, 1, `${page.path}: exactly one canonical`);
-  assert.equal(attribute(canonical[0], 'href'), new URL(page.path, origin).href);
+  assert.equal(metadata(html, 'twitter:image'), socialImage);
+  const schema = [...html.matchAll(/<script\b(?=[^>]*type="application\/ld\+json")[^>]*>([\s\S]*?)<\/script>/g)];
+  if (page.path === '/') {
+    assert.equal(schema.length, 1, 'One homepage JSON-LD graph');
+    assert.deepEqual(JSON.parse(schema[0][1]), {
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'WebSite', name: 'bytab', url: canonical },
+        {
+          '@type': 'SoftwareApplication',
+          name: 'bytab',
+          url: canonical,
+          applicationCategory: 'BrowserApplication',
+          operatingSystem: 'Google Chrome',
+          softwareVersion: '0.0.1',
+          description: 'A liquid glass new tab for Chrome bookmarks, shortcuts, and quick AI and search access.',
+          ...(storeUrl ? { downloadUrl: storeUrl } : {}),
+          offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
+        },
+      ],
+    });
+  } else {
+    assert.equal(schema.length, 0, `${page.path}: homepage schema is scoped to the homepage`);
+  }
   assert.ok(!html.includes('home-brand-wordmark'), `${page.path}: no separate wordmark text`);
   if (page.shell) {
     for (const feature of siteFeatures) {
@@ -93,18 +117,21 @@ for (const page of pages) {
     assert.ok(!html.includes('class="home-brand-tagline"'), `${page.path}: logo tagline is hidden`);
     assert.ok(html.includes('>Settings<'), `${page.path}: settings button`);
     assert.ok(html.includes('class="home-time"') && html.includes('class="home-date"'), `${page.path}: clock and date`);
-    assert.ok(html.includes('Start your day. Start with bytab.'), `${page.path}: homepage tagline`);
+    assert.equal(text.split(tagline).length, 2, `${page.path}: one homepage tagline`);
+    assert.ok(text.includes(introduction) && text.includes(privacyNote), `${page.path}: homepage introduction and privacy note`);
     assert.ok(!html.includes('class="home-recent"'), `${page.path}: recent page previews are removed`);
-    const installLink = (html.match(/<a\b[^>]*>/g) || []).find(tag => attribute(tag, 'class') === 'chrome-install');
+    assert.doesNotMatch(text, /Coming Soon/i, `${page.path}: no stale install copy`);
+    const installLink = (html.match(/<a\b[^>]*>[\s\S]*?<\/a>/g) || []).find(link => attribute(link.split('>')[0], 'class') === 'chrome-install');
     if (storeUrl) {
       assert.ok(installLink, `${page.path}: Add to Chrome link`);
+      assert.match(installLink, />\s*Add to Chrome — Free\s*</, `${page.path}: install link copy`);
       const href = attribute(installLink, 'href');
       assert.equal(href, storeUrl, `${page.path}: official store listing`);
       assert.deepEqual(new URL(href).searchParams.getAll('utm_source'), ['bytab.dev'], `${page.path}: install attribution`);
       assert.equal(attribute(installLink, 'target'), '_blank');
+      assert.deepEqual(attribute(installLink, 'rel').split(/\s+/).sort(), ['noopener', 'noreferrer']);
     } else {
       assert.equal(installLink, undefined, `${page.path}: no install link for an invalid store URL`);
-      assert.match(html, /<button\b(?=[^>]*class="chrome-install")(?=[^>]*\bdisabled)[^>]*>Coming Soon<\/button>/);
     }
     assert.ok(html.includes('Ask anything...') && html.includes('aria-haspopup="dialog"') && text.includes('This website is a preview only.'));
     assert.ok(!html.includes('id="home-prompt-input"') && !html.includes('aria-label="Select provider"'));
@@ -117,19 +144,22 @@ for (const page of pages) {
     assert.ok(dialog, `${page.path}: SSR dialog`);
     const titleId = attribute(dialog, 'aria-labelledby');
     assert.ok(titleId, `${page.path}: dialog is labelled`);
-    const heading = [...html.matchAll(/(<h2\b[^>]*>)([^<]*)<\/h2>/g)].find(([, tag]) => attribute(tag, 'id') === titleId);
-    assert.equal(decode(heading?.[2]), page.windowTitle, `${page.path}: SSR dialog title`);
+    const label = [...html.matchAll(/(<p\b[^>]*>)([^<]*)<\/p>/g)].find(([, tag]) => attribute(tag, 'id') === titleId);
+    assert.equal(decode(label?.[2]), page.windowTitle, `${page.path}: SSR dialog title`);
+    assert.equal(attribute(dialog, 'aria-describedby'), 'feature-summary', `${page.path}: dialog describes its visible introduction`);
     const titlebar = html.match(/<header\b[^>]*class="window-titlebar"[^>]*>([\s\S]*?)<\/header>/)?.[1] || '';
     const titlebarActions = titlebar.match(/<(?:button|a)\b[^>]*>/g) || [];
     assert.equal(titlebarActions.length, 1, `${page.path}: one title bar action`);
     assert.equal(attribute(titlebarActions[0], 'aria-label'), 'Close window', `${page.path}: labelled close button`);
     assert.ok(!html.includes('feature-whiteboard'), `${page.path}: no empty whiteboard`);
-    assert.ok(text.includes(page.sheet.hero), `${page.path}: hero`);
-    for (const moduleTitle of page.sheet.modules) assert.ok(text.includes(moduleTitle), `${page.path}: ${moduleTitle}`);
-    for (const tag of page.sheet.tags) assert.ok(text.includes(tag), `${page.path}: tag ${tag}`);
-    for (const label of page.sheet.links || []) assert.ok(text.includes(label), `${page.path}: link ${label}`);
-    if (page.path === '/features/privacy' || page.path === '/features/customize-new-tab') {
-      assert.ok(html.includes('href="/privacy"') && html.includes('href="/terms"'), `${page.path}: legal links leave the window`);
+    const sheet = decode(html.match(/<article\b[^>]*class="feature-sheet"[^>]*>([\s\S]*?)<\/article>/)?.[1]);
+    assert.ok(sheet.includes(`<p id="feature-summary"`) && sheet.includes(page.sheet.heroSubtitle), `${page.path}: SSR feature introduction`);
+    for (const module of page.sheet.modules) {
+      assert.ok(sheet.includes(module.title) && sheet.includes(module.description), `${page.path}: SSR ${module.title} copy`);
+    }
+    for (const tag of page.sheet.tags) assert.ok(sheet.includes(tag), `${page.path}: tag ${tag}`);
+    for (const link of page.sheet.links || []) {
+      assert.ok(sheet.includes(`href="${link.to}"`) && sheet.includes(link.label), `${page.path}: crawlable ${link.label} link`);
     }
     const activeLink = (html.match(/<a\b[^>]*>/g) || []).find(tag => attribute(tag, 'href') === page.path && attribute(tag, 'id').startsWith('dock-'));
     assert.equal(attribute(activeLink || '', 'aria-current'), 'page', `${page.path}: active Dock`);
@@ -158,13 +188,22 @@ for (const page of pages) {
     assert.ok(html.includes('href="mailto:szyszylife@gmail.com?subject=bytab%20Support%20%E2%80%94%20"'));
     assert.ok(html.includes('href="/privacy"') && html.includes('href="/terms"'), 'Support links to Privacy and Terms');
     if (storeUrl) assert.ok(html.includes(`href="${storeUrl}"`), 'Support links to the official store listing');
-    assert.ok(!/noindex/i.test(metadata(html, 'robots') ?? ''), 'Support is indexable');
   } else {
     assert.ok(!html.includes('role="dialog"'), 'Homepage has no open dialog');
   }
   const panel = page.sheet ? ', feature sheet' : page.legal ? ', legal document' : '';
   console.log(`PASS ${page.path}: SSR, SEO, canonical${page.shell ? ', crawlable Dock' : ''}${panel}`);
 }
+
+assert.equal(socialImages.size, 1, 'All pages use the bytab share card');
+const [socialImage] = [...socialImages].map(url => new URL(url));
+const imageResponse = await fetch(new URL(socialImage.pathname + socialImage.search, base));
+assert.equal(imageResponse.status, 200, 'OG image HTTP status');
+assert.match(imageResponse.headers.get('content-type') ?? '', /^image\/png\b/);
+const image = Buffer.from(await imageResponse.arrayBuffer());
+assert.equal(image.toString('ascii', 12, 16), 'IHDR', 'OG image is a PNG');
+assert.deepEqual([image.readUInt32BE(16), image.readUInt32BE(20)], [1200, 630], 'OG image dimensions');
+console.log('PASS share card: 1200 × 630 PNG; homepage JSON-LD: WebSite and SoftwareApplication');
 
 for (const path of assets) {
   assert.notEqual(path, '/_nuxt/', 'Asset references must name a file');
@@ -184,11 +223,16 @@ console.log(`PASS ${assets.size} static resources: scripts, styles, local fonts 
 for (const path of ['/features/unknown-feature', '/features/chrome-bookmarks/extra', '/unknown-page']) {
   assert.equal((await fetch(new URL(path, base))).status, 404, `${path}: genuine 404`);
 }
-const sitemap = await (await fetch(new URL('/sitemap.xml', base))).text();
+const sitemapResponse = await fetch(new URL('/sitemap.xml', base), { redirect: 'error' });
+assert.equal(sitemapResponse.status, 200);
+assert.match(sitemapResponse.headers.get('content-type') ?? '', /^application\/xml\b/);
+const sitemap = await sitemapResponse.text();
 const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
 assert.deepEqual(locations, sitePaths.map(path => new URL(path, origin).href));
-const robots = await (await fetch(new URL('/robots.txt', base))).text();
-assert.ok(robots.includes(`Sitemap: ${origin}/sitemap.xml`));
-const queried = await (await fetch(new URL('/features/chrome-bookmarks?source=check', base))).text();
-assert.equal(metadata(queried, 'og:url'), `${origin}/features/chrome-bookmarks`, 'Canonical excludes query strings');
-console.log(`PASS unknown routes: 404; sitemap: all ${sitePaths.length} pages; robots: sitemap discovery; canonical: no query`);
+assert.doesNotMatch(sitemap, /<lastmod\b/);
+const robotsResponse = await fetch(new URL('/robots.txt', base), { redirect: 'error' });
+assert.equal(robotsResponse.status, 200);
+assert.equal(await robotsResponse.text(), `User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`);
+const queried = await (await fetch(new URL('/features/chrome-bookmarks?source=check#fragment', base))).text();
+assert.equal(canonicalUrl(queried), `${origin}/features/chrome-bookmarks`, 'Canonical excludes query strings and fragments');
+console.log(`PASS unknown routes: 404; sitemap: ${sitePaths.length} canonical URLs; robots: allows pages and declares the sitemap`);
